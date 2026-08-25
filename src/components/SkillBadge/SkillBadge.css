@@ -1,0 +1,75 @@
+.skill-badge-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0.25rem 0.65rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  border-radius: var(--radius-full);
+  border: 1px solid transparent;
+  transition: all var(--transition-fast);
+  cursor: default;
+  user-select: none;
+}
+
+.skill-badge-item:hover {
+  transform: translateY(-1px);
+}
+
+.badge-matched {
+  background: var(--status-success-bg);
+  color: #34d399;
+  border-color: var(--status-success-border);
+}
+
+.badge-matched:hover {
+  box-shadow: 0 0 10px var(--status-success-glow);
+}
+
+.badge-partial {
+  background: var(--status-warning-bg);
+  color: #fbbf24;
+  border-color: var(--status-warning-border);
+}
+
+.badge-partial:hover {
+  box-shadow: 0 0 10px var(--status-warning-glow);
+}
+
+.badge-missing {
+  background: var(--status-danger-bg);
+  color: #f87171;
+  border-color: var(--status-danger-border);
+}
+
+.badge-missing:hover {
+  box-shadow: 0 0 10px var(--status-danger-glow);
+}
+
+.badge-high-priority {
+  border-width: 1.5px;
+  font-weight: 600;
+}
+
+.badge-synonym-tag {
+  font-size: 0.725rem;
+  opacity: 0.8;
+  font-style: italic;
+}
+
+.badge-inline-action {
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  color: currentColor;
+  border-radius: var(--radius-full);
+  padding: 0.1rem 0.4rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-left: 2px;
+  transition: background var(--transition-fast);
+}
+
+.badge-inline-action:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
