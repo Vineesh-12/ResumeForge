@@ -1,0 +1,69 @@
+.tailor-workspace-grid {
+  display: grid;
+  grid-template-columns: 400px 1fr;
+  gap: var(--space-6);
+}
+
+@media (max-width: 1080px) {
+  .tailor-workspace-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.tailor-sidebar-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+/* Sidebar Tab Switcher */
+.sidebar-tab-switcher {
+  display: flex;
+  background: var(--bg-secondary);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  padding: 3px;
+  gap: 4px;
+}
+
+.sidebar-tab-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: 0.45rem 0.75rem;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+}
+
+.sidebar-tab-btn:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.sidebar-tab-btn.active {
+  background: var(--glass-bg-hover);
+  color: #ffffff;
+  font-weight: 600;
+  border-color: rgba(139, 92, 246, 0.35);
+  box-shadow: 0 0 10px var(--accent-primary-glow);
+}
+
+.sidebar-guard-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.tailor-editor-col {
+  display: flex;
+  flex-direction: column;
+}
