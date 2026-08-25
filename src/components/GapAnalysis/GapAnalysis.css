@@ -1,0 +1,138 @@
+.gap-analysis-dashboard {
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  background: var(--bg-secondary);
+}
+
+.metrics-summary-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  background: rgba(7, 9, 14, 0.7);
+  padding: var(--space-4) var(--space-6);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--glass-border);
+}
+
+.metric-stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 1.6rem;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.stat-label {
+  font-size: 0.725rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.metric-stat-divider {
+  width: 1px;
+  height: 32px;
+  background: var(--glass-border);
+}
+
+.matrix-groups-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.matrix-category-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  background: rgba(7, 9, 14, 0.4);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--glass-border);
+}
+
+.category-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.category-group-header h4 {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.badges-flow-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  min-height: 32px;
+  align-items: center;
+}
+
+/* Density Map Section */
+.density-map-section {
+  border-color: rgba(6, 182, 212, 0.2);
+}
+
+.density-tags-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: var(--space-2);
+}
+
+.density-tag-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.35rem 0.65rem;
+  background: rgba(22, 27, 38, 0.8);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+}
+
+.density-kw-name {
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 130px;
+}
+
+.density-count-pill {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.1rem 0.45rem;
+  border-radius: var(--radius-full);
+}
+
+.count-optimal {
+  background: var(--status-success-bg);
+  color: var(--status-success);
+}
+
+.count-low {
+  background: var(--status-warning-bg);
+  color: var(--status-warning);
+}
+
+.count-zero {
+  background: var(--status-danger-bg);
+  color: var(--status-danger);
+}
