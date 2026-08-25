@@ -33,7 +33,7 @@ export default function PDFPreview({ resumeData, targetRole = 'Software_Engineer
       contact.location,
       contact.phone,
       contact.email,
-      ...rawContactLinks.map(l => l.url || l.label)
+      ...rawContactLinks.map(l => l.label || l.url)
     ].filter(Boolean)
 
     lines.push(headerItems.join(' | '))

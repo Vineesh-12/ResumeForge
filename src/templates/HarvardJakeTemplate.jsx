@@ -38,7 +38,7 @@ export default function HarvardJakeTemplate({ data }) {
               if (!lnk || !lnk.url) return null
               const isLast = lIdx === rawContactLinks.length - 1
               const fullUrl = lnk.url.startsWith('http') ? lnk.url : `https://${lnk.url}`
-              const displayLabel = lnk.url.replace(/^https?:\/\//, '').replace(/^www\./, '')
+              const displayLabel = lnk.label || lnk.url.replace(/^https?:\/\//, '').replace(/^www\./, '')
 
               return (
                 <Text key={`link-${lIdx}`}>

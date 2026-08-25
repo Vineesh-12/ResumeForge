@@ -176,7 +176,7 @@ export default function ResumeEditor({
     contact.location,
     contact.phone,
     contact.email,
-    ...rawContactLinks.map(l => l.url || l.label)
+    ...rawContactLinks.map(l => l.label || l.url)
   ].filter(Boolean)
 
   const skills = resumeData.skills || {}
