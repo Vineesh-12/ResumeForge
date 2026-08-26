@@ -1,79 +1,172 @@
 import { callGeminiStructured } from './geminiService.js'
 
 /**
- * Scrapes job posting text from a URL using client-safe reader proxy
- * and uses Gemini AI to extract structured job title, company, and requirements.
- * @param {string} url - Target job posting URL
- * @param {string} apiKey - Gemini API key
- * @returns {Promise<{ jobTitle: string, company: string, rawDescription: string }>}
+ * Strips HTML tags and script/style content to extract clean text from raw web pages.
  */
-export async function scrapeJobDescriptionFromUrl(url, apiKey) {
-  if (!url || !url.trim()) {
-    throw new Error('Please enter a valid job posting URL.')
-  }
+function cleanHtmlContent(html) {
+  if (!html) return ''
+  return html
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, ' ')
+    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, ' ')
+    .replace(/<noscript\b[^<]*(?:(?!<\/noscript>)<[^<]*)*<\/noscript>/gi, ' ')
+    .replace(/<svg\b[^<]*(?:(?!<\/svg>)<[^<]*)*<\/svg>/gi, ' ')
+    .replace(/<header\b[^<]*(?:(?!<\/header>)<[^<]*)*<\/header>/gi, ' ')
+    .replace(/<footer\b[^<]*(?:(?!<\/footer>)<[^<]*)*<\/footer>/gi, ' ')
+    .replace(/<nav\b[^<]*(?:(?!<\/nav>)<[^<]*)*<\/nav>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
 
-  const cleanUrl = url.trim()
-
-  // 1. Fetch page content via reader proxy (jina.ai reader bypasses CORS & returns clean markdown)
-  let rawText = ''
+/**
+ * Fetches page content using cascading multi-proxy fallbacks to bypass CORS and anti-bot blocks.
+ */
+async function fetchPageWithFallbacks(url) {
+  // Method 1: Jina AI Markdown Reader (optimal for article/job content)
   try {
-    const readerUrl = `https://r.jina.ai/${cleanUrl}`
-    const response = await fetch(readerUrl, {
+    const jinaUrl = `https://r.jina.ai/${url}`
+    const res = await fetch(jinaUrl, {
       headers: {
         'Accept': 'text/plain',
         'X-No-Cache': 'true'
       }
     })
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch job posting (Status: ${response.status})`)
-    }
-
-    rawText = await response.text()
-    if (!rawText || rawText.length < 50) {
-      throw new Error('Retrieved webpage content was too short. Please paste the job description text manually.')
+    if (res.ok) {
+      const text = await res.text()
+      if (text && text.trim().length > 100 && !text.includes('Security Check') && !text.includes('Just a moment...')) {
+        return text
+      }
     }
   } catch (err) {
-    console.warn('Reader proxy fetch failed, attempting backup fetch:', err)
-    // Fallback: try allorigins proxy
-    try {
-      const backupUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(cleanUrl)}`
-      const backupRes = await fetch(backupUrl)
-      if (!backupRes.ok) throw new Error('Backup fetch failed.')
-      rawText = await backupRes.text()
-    } catch {
-      throw new Error('Could not access the job posting URL directly due to website restrictions. Please copy and paste the job description text manually.')
+    console.warn('Jina proxy failed, trying AllOrigins:', err)
+  }
+
+  // Method 2: AllOrigins JSON Proxy
+  try {
+    const allOriginsUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`
+    const res = await fetch(allOriginsUrl)
+    if (res.ok) {
+      const data = await res.json()
+      if (data?.contents) {
+        const cleaned = cleanHtmlContent(data.contents)
+        if (cleaned.length > 100) return cleaned
+      }
+    }
+  } catch (err) {
+    console.warn('AllOrigins proxy failed, trying CodeTabs:', err)
+  }
+
+  // Method 3: CodeTabs CORS Proxy
+  try {
+    const codeTabsUrl = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`
+    const res = await fetch(codeTabsUrl)
+    if (res.ok) {
+      const html = await res.text()
+      const cleaned = cleanHtmlContent(html)
+      if (cleaned.length > 100) return cleaned
+    }
+  } catch (err) {
+    console.warn('CodeTabs proxy failed:', err)
+  }
+
+  throw new Error('Unable to extract job text automatically. Some sites (like LinkedIn or Workday) require account login. Please copy and paste the job description text directly.')
+}
+
+/**
+ * Scrapes job posting text from a URL using client-safe reader proxy
+ * and uses Gemini AI to extract structured job title, company, and requirements.
+ * @param {string} rawUrl - Target job posting URL
+ * @param {string} apiKey - Gemini API key
+ * @returns {Promise<{ jobTitle: string, company: string, rawDescription: string }>}
+ */
+export async function scrapeJobDescriptionFromUrl(rawUrl, apiKey) {
+  if (!rawUrl || !rawUrl.trim()) {
+    throw new Error('Please enter a valid job posting URL.')
+  }
+
+  let cleanUrl = rawUrl.trim()
+  if (!/^https?:\/\//i.test(cleanUrl)) {
+    cleanUrl = 'https://' + cleanUrl
+  }
+
+  // Validate URL format
+  try {
+    new URL(cleanUrl)
+  } catch {
+    throw new Error('Invalid URL format. Please include a valid website link.')
+  }
+
+  // Fetch page content
+  const rawContent = await fetchPageWithFallbacks(cleanUrl)
+
+  // Detect login walls / bot challenge keywords
+  const lower = rawContent.toLowerCase()
+  if (
+    lower.includes('sign in to view') ||
+    lower.includes('join linkedin') ||
+    lower.includes('please enable javascript and cookies to continue') ||
+    lower.includes('access denied') ||
+    lower.includes('captcha')
+  ) {
+    throw new Error('This job posting is behind a login wall or anti-bot shield. Please copy and paste the job description text directly into the box.')
+  }
+
+  // Extract first 10,000 characters
+  const excerpt = rawContent.substring(0, 10000)
+
+  // If no API key is set yet, return the cleaned excerpt directly
+  if (!apiKey) {
+    return {
+      jobTitle: 'Target Role',
+      company: 'Target Company',
+      rawDescription: excerpt
     }
   }
 
-  // Trim to first 12,000 characters to keep within context limits
-  const pageExcerpt = rawText.substring(0, 12000)
-
-  // 2. Use Gemini AI to extract the clean job description text, title, and company
-  const prompt = `You are a technical recruiter assistant. Extract the Job Title, Company Name, and the complete Job Description text (including responsibilities, requirements, and tech stack) from the following scraped webpage content. Ignore navigational headers, footers, cookie banners, and irrelevant website clutter.
+  // Use Gemini AI to structure into clear sections
+  const prompt = `You are an elite technical recruiter assistant. Extract the Job Title, Company Name, and the complete Job Description text (including About Role, Responsibilities, Required Qualifications, and Technical Stack) from the following scraped webpage content.
+Ignore navigational links, cookie notices, header/footer text, and unrelated sidebar job recommendations.
 
 SCRAPED WEBPAGE CONTENT:
 """
-${pageExcerpt}
+${excerpt}
 """
 
 Return strictly valid JSON with this schema:
 {
   "jobTitle": "Job Title (e.g. Senior Full Stack Engineer)",
   "company": "Company Name (e.g. Stripe)",
-  "rawDescription": "Complete cleaned-up job description text formatted clearly with sections for About the Role, Responsibilities, and Required Qualifications."
+  "rawDescription": "Complete cleaned-up job description text formatted clearly with sections for About the Role, Key Responsibilities, and Required Qualifications."
 }`
 
-  const result = await callGeminiStructured({
-    apiKey,
-    prompt,
-    systemInstruction: 'You extract clean, professional job description text from raw scraped web content.',
-    temperature: 0.1
-  })
+  try {
+    const result = await callGeminiStructured({
+      apiKey,
+      prompt,
+      systemInstruction: 'You extract clean, professional job descriptions from raw webpage text.',
+      temperature: 0.1
+    })
 
-  return {
-    jobTitle: result?.jobTitle || 'Target Role',
-    company: result?.company || 'Target Company',
-    rawDescription: result?.rawDescription || pageExcerpt
+    const title = result?.jobTitle || 'Target Role'
+    const company = result?.company || 'Target Company'
+    const description = result?.rawDescription || excerpt
+
+    return {
+      jobTitle: title,
+      company: company,
+      rawDescription: description
+    }
+  } catch {
+    // If structured extraction fails, return the excerpt
+    return {
+      jobTitle: 'Target Role',
+      company: 'Target Company',
+      rawDescription: excerpt
+    }
   }
 }

@@ -63,15 +63,6 @@ export default function InputPage() {
       return
     }
 
-    if (!state.apiKey) {
-      dispatch({ type: 'TOGGLE_API_KEY_MODAL', payload: true })
-      dispatch({
-        type: 'SET_ERROR',
-        payload: 'Please enter your Gemini API key to use the Job URL Auto-Scraper.'
-      })
-      return
-    }
-
     setIsScraping(true)
     try {
       const result = await scrapeJobDescriptionFromUrl(jobUrl, state.apiKey)
@@ -80,7 +71,9 @@ export default function InputPage() {
       dispatch({
         type: 'SET_TOAST',
         payload: {
-          message: `Successfully extracted "${result.jobTitle}" from ${result.company}!`,
+          message: result.company !== 'Target Company'
+            ? `Extracted "${result.jobTitle}" at ${result.company}!`
+            : 'Job description extracted and filled successfully!',
           type: 'success'
         }
       })
