@@ -171,7 +171,7 @@ export default function TrackerPage() {
       {/* Metrics Row */}
       <div className="tracker-metrics-grid">
         <div className="metric-card glass-card">
-          <div className="metric-icon-wrap" style={{ background: 'rgba(59, 130, 246, 0.15)', color: '#60a5fa' }}>
+          <div className="metric-icon-wrap" style={{ background: '#EFF6FF', color: '#2563EB' }}>
             <Briefcase size={18} />
           </div>
           <div>
@@ -181,7 +181,7 @@ export default function TrackerPage() {
         </div>
 
         <div className="metric-card glass-card">
-          <div className="metric-icon-wrap" style={{ background: 'rgba(37, 99, 235, 0.12)', color: '#93C5FD' }}>
+          <div className="metric-icon-wrap" style={{ background: '#FFF7ED', color: '#EA580C' }}>
             <TrendingUp size={18} />
           </div>
           <div>
@@ -191,7 +191,7 @@ export default function TrackerPage() {
         </div>
 
         <div className="metric-card glass-card">
-          <div className="metric-icon-wrap" style={{ background: 'rgba(245, 158, 11, 0.15)', color: '#fbbf24' }}>
+          <div className="metric-icon-wrap" style={{ background: '#FFFBEB', color: '#D97706' }}>
             <Clock size={18} />
           </div>
           <div>
@@ -201,7 +201,7 @@ export default function TrackerPage() {
         </div>
 
         <div className="metric-card glass-card">
-          <div className="metric-icon-wrap" style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#34d399' }}>
+          <div className="metric-icon-wrap" style={{ background: '#ECFDF5', color: '#059669' }}>
             <CheckCircle2 size={18} />
           </div>
           <div>

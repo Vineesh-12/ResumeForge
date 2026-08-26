@@ -3,7 +3,10 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
-  background: var(--bg-secondary);
+  background: #FFFFFF;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
 }
 
 .score-widget-header {
@@ -30,7 +33,7 @@
   padding: 0.15rem 0.55rem;
   border-radius: var(--radius-full);
   border: 1px solid currentColor;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(0, 0, 0, 0.03);
 }
 
 /* Circular Gauge */
@@ -50,13 +53,12 @@
 
 .gauge-circle-bg {
   fill: none;
-  stroke: var(--bg-tertiary);
+  stroke: #F1F5F9;
 }
 
 .gauge-circle-val {
   fill: none;
   transition: stroke-dashoffset 0.8s ease-out, stroke 0.3s ease;
-  filter: drop-shadow(0 0 6px rgba(37, 99, 235, 0.35));
 }
 
 .gauge-center-content {
@@ -72,6 +74,7 @@
   font-weight: 800;
   line-height: 1;
   letter-spacing: -0.03em;
+  color: var(--text-primary);
 }
 
 .gauge-score-denominator {
@@ -99,54 +102,16 @@
   font-size: 0.8rem;
 }
 
-.metric-title {
-  color: var(--text-secondary);
-}
-
-.metric-score-text {
-  font-weight: 600;
-  color: var(--text-primary);
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-}
-
-.metric-track {
+.progress-track-bg {
   width: 100%;
-  height: 5px;
-  background: var(--bg-tertiary);
+  height: 6px;
+  background: #F1F5F9;
   border-radius: var(--radius-full);
   overflow: hidden;
 }
 
-.metric-fill {
+.progress-bar-fill {
   height: 100%;
   border-radius: var(--radius-full);
-  transition: width 0.6s ease-out;
-}
-
-/* Recommendations Card */
-.score-recommendations-card {
-  background: rgba(7, 9, 14, 0.6);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-md);
-  padding: var(--space-3) var(--space-4);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
-.recs-header {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.recs-list {
-  padding-left: 1.15rem;
-  font-size: 0.775rem;
-  color: var(--text-secondary);
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  line-height: 1.4;
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }

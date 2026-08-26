@@ -12,9 +12,10 @@
   align-items: center;
   justify-content: space-between;
   padding: var(--space-3) var(--space-4);
-  background: var(--bg-secondary);
+  background: #FFFFFF;
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-full);
+  box-shadow: var(--shadow-sm);
 }
 
 .btn-back-link {
@@ -41,8 +42,13 @@
 }
 
 .btn-hire-me {
-  background: var(--accent-gradient-primary);
+  background: var(--accent-primary);
+  color: #ffffff;
   font-weight: 600;
+}
+
+.btn-hire-me:hover {
+  background: var(--accent-primary-hover);
 }
 
 /* QR Popup Card */
@@ -52,14 +58,14 @@
   right: calc(50% - 440px);
   z-index: 100;
   padding: var(--space-4);
-  background: var(--bg-secondary);
+  background: #FFFFFF;
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-xl);
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--space-2);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
+  box-shadow: var(--shadow-lg);
 }
 
 .qr-header {
@@ -87,14 +93,14 @@
 
 /* Main Resume Card */
 .public-resume-card {
-  background: var(--bg-secondary);
+  background: #FFFFFF;
   border: 1px solid var(--glass-border);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-2xl);
   padding: var(--space-8);
   display: flex;
   flex-direction: column;
   gap: var(--space-6);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--shadow-md);
 }
 
 .pub-header {
@@ -146,10 +152,10 @@
   align-items: center;
   gap: 6px;
   padding: 4px 10px;
-  background: rgba(16, 185, 129, 0.12);
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  background: #ECFDF5;
+  border: 1px solid #A7F3D0;
   border-radius: var(--radius-full);
-  color: #34d399;
+  color: #065F46;
   font-size: 0.775rem;
   font-weight: 600;
 }
@@ -165,17 +171,17 @@
   align-items: center;
   gap: 6px;
   padding: 4px 10px;
-  background: rgba(37, 99, 235, 0.10);
-  border: 1px solid rgba(37, 99, 235, 0.25);
+  background: #FFF7ED;
+  border: 1px solid #FED7AA;
   border-radius: var(--radius-md);
-  color: #93C5FD;
+  color: #C2410C;
   font-size: 0.8rem;
   text-decoration: none;
   transition: all var(--transition-fast);
 }
 
 .pub-link-chip:hover {
-  background: rgba(37, 99, 235, 0.20);
+  background: #FFEDD5;
   transform: translateY(-1px);
 }
 
@@ -233,16 +239,16 @@
 .pub-tech-chip {
   font-size: 0.775rem;
   padding: 2px 8px;
-  background: rgba(255, 255, 255, 0.06);
+  background: #F1F5F9;
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-sm);
   color: var(--text-secondary);
 }
 
 .pub-tech-chip.chip-cyan {
-  background: rgba(14, 165, 233, 0.10);
-  border-color: rgba(14, 165, 233, 0.22);
-  color: #7DD3FC;
+  background: #EFF6FF;
+  border-color: #BFDBFE;
+  color: #2563EB;
 }
 
 .pub-tech-chip.chip-sm {
@@ -291,7 +297,7 @@
   font-weight: 600;
   padding: 2px 8px;
   border-radius: var(--radius-full);
-  background: rgba(255, 255, 255, 0.06);
+  background: #F1F5F9;
   color: var(--text-secondary);
   white-space: nowrap;
 }
@@ -340,7 +346,7 @@
 
 .pub-gpa-tag {
   font-size: 0.75rem;
-  color: #34d399;
+  color: #065F46;
   font-weight: 600;
 }
 
@@ -355,7 +361,7 @@
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-2) var(--space-3);
-  background: rgba(14, 18, 27, 0.5);
+  background: #F8FAFC;
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-md);
   font-size: 0.85rem;

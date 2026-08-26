@@ -29,7 +29,10 @@
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  background: var(--bg-secondary);
+  background: #FFFFFF;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
 }
 
 .metric-icon-wrap {
@@ -71,8 +74,8 @@
 }
 
 .kanban-column {
-  background: var(--bg-secondary);
-  border-radius: var(--radius-lg);
+  background: #F8FAFC;
+  border-radius: var(--radius-xl);
   display: flex;
   flex-direction: column;
   min-height: 520px;
@@ -113,7 +116,7 @@
 .column-count-badge {
   font-size: 0.725rem;
   font-weight: 700;
-  background: rgba(255, 255, 255, 0.08);
+  background: #E2E8F0;
   padding: 2px 7px;
   border-radius: var(--radius-full);
   color: var(--text-secondary);
@@ -129,7 +132,7 @@
 }
 
 .kanban-empty-drop {
-  border: 1px dashed var(--glass-border);
+  border: 1px dashed #CBD5E1;
   border-radius: var(--radius-md);
   padding: var(--space-8) var(--space-2);
   text-align: center;
@@ -137,20 +140,21 @@
 
 /* Application Card */
 .application-card {
-  background: rgba(14, 18, 27, 0.8);
+  background: #FFFFFF;
   border: 1px solid var(--glass-border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   padding: var(--space-3);
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
   transition: all var(--transition-fast);
+  box-shadow: var(--shadow-xs);
 }
 
 .application-card:hover {
-  border-color: rgba(37, 99, 235, 0.35);
+  border-color: #CBD5E1;
   transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--shadow-sm);
 }
 
 .app-card-top {
@@ -203,24 +207,24 @@
 }
 
 .tag-salary {
-  background: rgba(16, 185, 129, 0.12);
-  color: #34d399;
-  border: 1px solid rgba(16, 185, 129, 0.25);
+  background: #ECFDF5;
+  color: #065F46;
+  border: 1px solid #A7F3D0;
 }
 
 .tag-date {
-  background: rgba(255, 255, 255, 0.05);
+  background: #F1F5F9;
   color: var(--text-muted);
 }
 
 .tag-link {
-  background: rgba(59, 130, 246, 0.12);
-  color: #93c5fd;
-  border: 1px solid rgba(59, 130, 246, 0.25);
+  background: #EFF6FF;
+  color: #2563EB;
+  border: 1px solid #BFDBFE;
 }
 
 .tag-link:hover {
-  background: rgba(59, 130, 246, 0.25);
+  background: #DBEAFE;
 }
 
 .app-resume-chip {
@@ -229,10 +233,10 @@
   gap: 4px;
   font-size: 0.7rem;
   color: var(--text-secondary);
-  background: rgba(37, 99, 235, 0.08);
+  background: #FFF7ED;
   padding: 3px 6px;
   border-radius: var(--radius-sm);
-  border: 1px solid rgba(37, 99, 235, 0.20);
+  border: 1px solid #FED7AA;
 }
 
 .app-notes-preview {
@@ -247,31 +251,80 @@
 
 .app-card-footer {
   padding-top: var(--space-1);
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 1px solid var(--glass-border);
 }
 
 .stage-select-control {
   width: 100%;
+  font-family: var(--font-sans);
   font-size: 0.725rem;
+  font-weight: 600;
   padding: 3px 6px;
-  background: rgba(0, 0, 0, 0.3);
-  color: var(--text-secondary);
-  border: 1px solid var(--glass-border);
   border-radius: var(--radius-sm);
+  background: #F8FAFC;
+  border: 1px solid var(--glass-border);
+  color: var(--text-secondary);
   cursor: pointer;
+  outline: none;
 }
 
-/* Modal */
-.add-app-modal {
-  max-width: 540px;
+.stage-select-control:focus {
+  border-color: var(--accent-primary);
+}
+
+/* Add Application Modal */
+.app-modal-card {
+  max-width: 520px;
   width: 90%;
   padding: var(--space-6);
-  background: var(--bg-secondary);
+  background: #FFFFFF;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
 }
 
-.add-app-form {
+.app-modal-form {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
   margin-top: var(--space-3);
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.form-group label {
+  font-size: 0.775rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.form-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+.select-control {
+  width: 100%;
+  background: #FFFFFF;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  padding: 0.65rem 0.85rem;
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  outline: none;
+}
+
+.select-control:focus {
+  border-color: var(--accent-primary);
+}
+
+.select-control option {
+  background: #FFFFFF;
+  color: #0F172A;
 }

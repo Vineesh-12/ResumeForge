@@ -9,38 +9,41 @@
 
 .page-hero {
   text-align: center;
-  max-width: 780px;
+  max-width: 820px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--space-3);
+  padding: var(--space-4) 0 var(--space-2) 0;
 }
 
 .hero-badge {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  padding: 0.35rem 0.95rem;
-  background: var(--accent-gradient-surface);
-  border: 1px solid rgba(37, 99, 235, 0.30);
+  padding: 0.35rem 1rem;
+  background: #FFF7ED;
+  border: 1px solid #FED7AA;
   border-radius: var(--radius-full);
   font-size: 0.825rem;
   font-weight: 600;
-  color: #93C5FD;
+  color: #C2410C;
 }
 
 .page-title {
-  font-size: clamp(2rem, 4vw, 3rem);
+  font-size: clamp(2.2rem, 4.5vw, 3.25rem);
   font-weight: 800;
-  letter-spacing: -0.03em;
-  line-height: 1.15;
+  letter-spacing: -0.035em;
+  line-height: 1.12;
+  color: var(--text-primary);
 }
 
 .page-subtitle {
   font-size: 1.05rem;
   color: var(--text-secondary);
   line-height: 1.6;
+  max-width: 640px;
 }
 
 /* Two-Panel Input Grid */
@@ -61,7 +64,10 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
-  background: rgba(14, 18, 27, 0.7);
+  background: #FFFFFF;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
 }
 
 .card-header {
@@ -75,27 +81,27 @@
 .card-icon-badge {
   width: 40px;
   height: 40px;
-  border-radius: var(--radius-md);
-  background: rgba(37, 99, 235, 0.12);
-  border: 1px solid rgba(37, 99, 235, 0.25);
+  border-radius: var(--radius-lg);
+  background: #FFF7ED;
+  border: 1px solid #FED7AA;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #93C5FD;
+  color: #EA580C;
 }
 
 .card-icon-badge.badge-cyan {
-  background: rgba(14, 165, 233, 0.12);
-  border-color: rgba(14, 165, 233, 0.25);
-  color: #7DD3FC;
+  background: #EFF6FF;
+  border-color: #BFDBFE;
+  color: #2563EB;
 }
 
 /* JD Tab Switcher */
 .jd-tab-switcher {
   display: flex;
-  background: rgba(7, 9, 14, 0.6);
+  background: #F1F5F9;
   padding: 4px;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-full);
   border: 1px solid var(--glass-border);
   gap: 4px;
 }
@@ -109,7 +115,7 @@
   padding: 0.45rem 0.75rem;
   background: transparent;
   border: none;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-full);
   color: var(--text-secondary);
   font-size: 0.8rem;
   font-weight: 500;
@@ -118,17 +124,18 @@
 }
 
 .jd-tab-btn.active {
-  background: var(--bg-tertiary);
+  background: #FFFFFF;
   color: var(--text-primary);
   font-weight: 600;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-xs);
 }
 
 .badge-new {
   font-size: 0.65rem;
   font-weight: 700;
-  background: rgba(37, 99, 235, 0.20);
-  color: #93C5FD;
+  background: #FFF7ED;
+  color: #C2410C;
+  border: 1px solid #FED7AA;
   padding: 1px 6px;
   border-radius: var(--radius-full);
   text-transform: uppercase;
@@ -140,9 +147,9 @@
   flex-direction: column;
   gap: var(--space-3);
   padding: var(--space-4);
-  background: rgba(7, 9, 14, 0.5);
+  background: #F8FAFC;
   border-radius: var(--radius-lg);
-  border: 1px dashed var(--glass-border);
+  border: 1px dashed #CBD5E1;
 }
 
 .jd-url-form {
@@ -167,6 +174,7 @@
 .jd-url-input {
   padding-left: 36px;
   font-size: 0.85rem;
+  background: #FFFFFF;
 }
 
 .btn-scrape {
@@ -178,7 +186,7 @@
 /* Upload Zone Staging */
 .upload-placeholder-zone {
   min-height: 240px;
-  border: 2px dashed var(--glass-border);
+  border: 2px dashed #CBD5E1;
   border-radius: var(--radius-lg);
   display: flex;
   flex-direction: column;
@@ -187,26 +195,28 @@
   text-align: center;
   padding: var(--space-6);
   gap: var(--space-2);
-  background: rgba(7, 9, 14, 0.4);
+  background: #F8FAFC;
   transition: all var(--transition-normal);
   cursor: pointer;
 }
 
 .upload-placeholder-zone:hover {
   border-color: var(--accent-primary);
-  background: rgba(37, 99, 235, 0.04);
+  background: #FFF7ED;
 }
 
 .upload-icon-circle {
   width: 56px;
   height: 56px;
   border-radius: var(--radius-full);
-  background: var(--bg-tertiary);
+  background: #FFFFFF;
+  border: 1px solid var(--glass-border);
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--accent-primary);
   margin-bottom: var(--space-2);
+  box-shadow: var(--shadow-xs);
 }
 
 .upload-feature-pills {
@@ -221,7 +231,7 @@
   gap: var(--space-1);
   font-size: 0.725rem;
   color: var(--text-muted);
-  background: var(--bg-secondary);
+  background: #FFFFFF;
   padding: 0.2rem 0.55rem;
   border-radius: var(--radius-full);
   border: 1px solid var(--glass-border);
@@ -238,7 +248,7 @@
 .jd-textarea {
   flex: 1;
   min-height: 240px;
-  background: rgba(7, 9, 14, 0.6);
+  background: #FFFFFF;
 }
 
 .jd-footer {

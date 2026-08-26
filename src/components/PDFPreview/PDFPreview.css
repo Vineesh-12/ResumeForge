@@ -20,12 +20,13 @@
 /* Template Gallery Box */
 .template-gallery-box {
   padding: var(--space-4);
-  background: var(--bg-secondary);
+  background: #FFFFFF;
   border: 1px solid var(--glass-border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-xl);
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
+  box-shadow: var(--shadow-sm);
 }
 
 .template-gallery-header {
@@ -52,9 +53,9 @@
   align-items: flex-start;
   text-align: left;
   padding: var(--space-3);
-  background: rgba(14, 18, 27, 0.6);
+  background: #FFFFFF;
   border: 1px solid var(--glass-border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   cursor: pointer;
   transition: all var(--transition-fast);
   gap: 3px;
@@ -62,15 +63,15 @@
 }
 
 .template-card-btn:hover {
-  background: rgba(28, 35, 51, 0.8);
-  border-color: rgba(37, 99, 235, 0.35);
+  background: #F8FAFC;
+  border-color: var(--glass-border-hover);
   transform: translateY(-1px);
 }
 
 .template-card-btn.active {
-  background: rgba(37, 99, 235, 0.12);
-  border-color: var(--accent-primary);
-  box-shadow: 0 0 15px rgba(37, 99, 235, 0.20);
+  background: #FFF7ED;
+  border-color: #F06A2A;
+  box-shadow: 0 2px 10px rgba(240, 106, 42, 0.15);
 }
 
 .template-card-top {
@@ -91,7 +92,7 @@
   font-weight: 600;
   padding: 1px 6px;
   border-radius: var(--radius-full);
-  background: rgba(255, 255, 255, 0.08);
+  background: #F1F5F9;
   color: var(--text-secondary);
 }
 
@@ -108,7 +109,7 @@
   gap: 3px;
   font-size: 0.675rem;
   font-weight: 700;
-  color: #60A5FA;
+  color: #C2410C;
   margin-top: 2px;
 }
 
@@ -131,7 +132,7 @@
   flex-direction: column;
   gap: var(--space-2);
   padding: var(--space-4);
-  background: rgba(14, 18, 27, 0.5);
+  background: #F8FAFC;
   border-radius: var(--radius-lg);
   border: 1px solid var(--glass-border);
 }
@@ -156,52 +157,67 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
-  background: var(--bg-secondary);
+  background: #F8FAFC;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
   min-height: 780px;
+  box-shadow: var(--shadow-sm);
 }
 
-.frame-meta-bar {
+.pdf-frame-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-bottom: var(--space-2);
+  padding-bottom: var(--space-3);
   border-bottom: 1px solid var(--glass-border);
 }
 
-.frame-canvas-wrap {
+.frame-title-group {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.frame-title-group h4 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.badge-ats-clean {
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 0.15rem 0.5rem;
+  background: #ECFDF5;
+  color: #065F46;
+  border: 1px solid #A7F3D0;
+  border-radius: var(--radius-full);
+}
+
+.pdf-document-viewport {
   flex: 1;
-  background: #1e1e1e;
-  border-radius: var(--radius-md);
-  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 700px;
+  min-height: 680px;
+  background: #E2E8F0;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  position: relative;
 }
 
-.live-pdf-iframe {
+.pdf-viewer-embed {
   width: 100%;
   height: 100%;
-  min-height: 720px;
+  min-height: 680px;
   border: none;
-  background: #ffffff;
 }
 
-.blob-loading-state {
+.pdf-render-fallback {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: var(--space-3);
-  padding: var(--space-12);
-}
-
-.blob-fallback-sheet {
-  background: #ffffff;
-  color: #111827;
-  padding: 2.5rem;
-  width: 100%;
-  max-width: 580px;
-  min-height: 680px;
-  font-family: 'Helvetica', 'Arial', sans-serif;
-  font-size: 0.825rem;
+  color: var(--text-muted);
 }

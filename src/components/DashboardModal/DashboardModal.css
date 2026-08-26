@@ -6,9 +6,9 @@
   flex-direction: column;
   padding: var(--space-6);
   border: 1px solid var(--glass-border);
-  background: var(--bg-secondary);
+  background: #FFFFFF;
   border-radius: var(--radius-xl);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 30px rgba(37, 99, 235, 0.12);
+  box-shadow: var(--shadow-lg);
   overflow: hidden;
 }
 
@@ -16,16 +16,16 @@
   width: 36px;
   height: 36px;
   border-radius: var(--radius-full);
-  background: var(--accent-gradient-primary);
+  background: #F06A2A;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #ffffff;
-  box-shadow: 0 0 12px var(--accent-primary-glow);
+  box-shadow: 0 2px 8px rgba(240, 106, 42, 0.3);
 }
 
 .save-current-panel {
-  background: rgba(14, 18, 27, 0.7);
+  background: #F8FAFC;
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg);
   padding: var(--space-4);
@@ -98,7 +98,7 @@
 
 .btn-refresh-resumes:hover {
   color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.05);
+  background: #F1F5F9;
 }
 
 .dashboard-empty-state {
@@ -124,7 +124,7 @@
 }
 
 .resume-card-glass {
-  background: rgba(22, 27, 38, 0.6);
+  background: #FFFFFF;
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg);
   padding: var(--space-4);
@@ -132,18 +132,19 @@
   flex-direction: column;
   gap: var(--space-3);
   transition: all var(--transition-fast);
+  box-shadow: var(--shadow-xs);
 }
 
 .resume-card-glass:hover {
-  background: rgba(28, 35, 51, 0.8);
-  border-color: rgba(37, 99, 235, 0.35);
+  background: #F8FAFC;
+  border-color: #CBD5E1;
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-sm);
 }
 
 .resume-card-glass.active-cloud-card {
-  border-color: var(--accent-primary);
-  background: rgba(37, 99, 235, 0.08);
+  border-color: #F06A2A;
+  background: #FFF7ED;
 }
 
 .resume-card-top {
@@ -171,10 +172,10 @@
   align-items: center;
   gap: 4px;
   padding: 2px 8px;
-  background: rgba(16, 185, 129, 0.12);
-  border: 1px solid rgba(16, 185, 129, 0.25);
+  background: #ECFDF5;
+  border: 1px solid #A7F3D0;
   border-radius: var(--radius-full);
-  color: #34d399;
+  color: #065F46;
   font-size: 0.725rem;
   font-weight: 600;
   white-space: nowrap;
@@ -200,7 +201,7 @@
   gap: var(--space-2);
   margin-top: auto;
   padding-top: var(--space-2);
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 1px solid var(--glass-border);
 }
 
 .btn-load-editor {
@@ -228,8 +229,8 @@
 
 .btn-trash-resume:hover {
   color: #ef4444;
-  border-color: rgba(239, 68, 68, 0.4);
-  background: rgba(239, 68, 68, 0.1);
+  border-color: #FECACA;
+  background: #FEF2F2;
 }
 
 .delete-confirm-group {
@@ -239,12 +240,12 @@
 }
 
 .btn-danger {
-  background: rgba(239, 68, 68, 0.2);
-  border: 1px solid rgba(239, 68, 68, 0.4);
-  color: #fca5a5;
+  background: #FEF2F2;
+  border: 1px solid #FECACA;
+  color: #991B1B;
 }
 
 .btn-danger:hover {
-  background: #ef4444;
-  color: #ffffff;
+  background: #EF4444;
+  color: #FFFFFF;
 }
