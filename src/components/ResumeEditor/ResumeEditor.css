@@ -74,7 +74,7 @@
 
 .btn-edit-section:hover {
   color: var(--accent-primary);
-  background: rgba(139, 92, 246, 0.12);
+  background: rgba(37, 99, 235, 0.12);
 }
 
 /* Typography on Canvas */
@@ -415,8 +415,8 @@
 
 .btn-add-bullet {
   background: transparent;
-  border: 1px dashed rgba(139, 92, 246, 0.4);
-  color: #c4b5fd;
+  border: 1px dashed rgba(37, 99, 235, 0.35);
+  color: #93C5FD;
   font-family: var(--font-sans);
   font-size: 0.775rem;
   font-weight: 500;
@@ -432,7 +432,7 @@
 }
 
 .btn-add-bullet:hover {
-  background: rgba(139, 92, 246, 0.15);
+  background: rgba(37, 99, 235, 0.12);
   border-color: var(--accent-primary);
   color: #ffffff;
 }

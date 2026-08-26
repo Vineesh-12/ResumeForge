@@ -181,7 +181,7 @@ export default function TrackerPage() {
         </div>
 
         <div className="metric-card glass-card">
-          <div className="metric-icon-wrap" style={{ background: 'rgba(139, 92, 246, 0.15)', color: '#c4b5fd' }}>
+          <div className="metric-icon-wrap" style={{ background: 'rgba(37, 99, 235, 0.12)', color: '#93C5FD' }}>
             <TrendingUp size={18} />
           </div>
           <div>

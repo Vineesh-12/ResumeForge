@@ -41,11 +41,11 @@
   height: 38px;
   border-radius: var(--radius-md);
   background: var(--accent-gradient-surface);
-  border: 1px solid rgba(139, 92, 246, 0.3);
+  border: 1px solid rgba(37, 99, 235, 0.25);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #c4b5fd;
+  color: #93C5FD;
 }
 
 .btn-close {
@@ -112,7 +112,7 @@
 }
 
 .link-external:hover {
-  color: #67e8f9;
+  color: #7DD3FC;
   text-decoration: underline;
 }
 

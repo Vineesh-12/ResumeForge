@@ -1,37 +1,37 @@
 /* ==========================================================================
    ResumeForge Design System — Core Design Tokens & Global CSS
-   Theme: Ultra-modern Dark Glassmorphism with Cyber Indigo & Neon Mint accents
+   Theme: Slate Forge — Professional SaaS Dark Theme (Linear/Stripe inspired)
    ========================================================================== */
 
 :root {
   /* Color Palette - Deep Dark Slate Canvas */
-  --bg-primary: #07090e;
-  --bg-secondary: #0e121b;
-  --bg-tertiary: #161b26;
-  --bg-elevated: #1c2331;
-  --bg-overlay: rgba(7, 9, 14, 0.85);
+  --bg-primary: #0B0F19;
+  --bg-secondary: #111827;
+  --bg-tertiary: #1A2332;
+  --bg-elevated: #1F2B3D;
+  --bg-overlay: rgba(11, 15, 25, 0.88);
 
   /* Glassmorphism Surfaces */
-  --glass-bg: rgba(22, 27, 38, 0.55);
-  --glass-bg-hover: rgba(28, 35, 49, 0.75);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-border-hover: rgba(255, 255, 255, 0.18);
-  --glass-border-focus: rgba(124, 58, 237, 0.5);
+  --glass-bg: rgba(17, 24, 39, 0.65);
+  --glass-bg-hover: rgba(31, 43, 61, 0.80);
+  --glass-border: rgba(148, 163, 184, 0.12);
+  --glass-border-hover: rgba(148, 163, 184, 0.22);
+  --glass-border-focus: rgba(37, 99, 235, 0.50);
   --glass-blur: blur(16px);
-  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.45);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.35);
 
-  /* Brand Accents & Gradients */
-  --accent-primary: #8b5cf6;       /* Vibrant Purple */
-  --accent-primary-hover: #7c3aed;
-  --accent-primary-glow: rgba(139, 92, 246, 0.35);
+  /* Brand Accents & Gradients — Professional Blue & Sky */
+  --accent-primary: #2563EB;       /* Professional Blue */
+  --accent-primary-hover: #1D4ED8;
+  --accent-primary-glow: rgba(37, 99, 235, 0.25);
 
-  --accent-cyan: #06b6d4;          /* Cyber Cyan */
-  --accent-cyan-hover: #0891b2;
-  --accent-cyan-glow: rgba(6, 182, 212, 0.3);
+  --accent-cyan: #0EA5E9;          /* Sky Blue Accent */
+  --accent-cyan-hover: #0284C7;
+  --accent-cyan-glow: rgba(14, 165, 233, 0.18);
 
-  --accent-gradient-primary: linear-gradient(135deg, #8b5cf6 0%, #06b6d4 100%);
-  --accent-gradient-text: linear-gradient(135deg, #a78bfa 0%, #22d3ee 50%, #e0e7ff 100%);
-  --accent-gradient-surface: linear-gradient(135deg, rgba(139, 92, 246, 0.12) 0%, rgba(6, 182, 212, 0.08) 100%);
+  --accent-gradient-primary: linear-gradient(135deg, #2563EB 0%, #0EA5E9 100%);
+  --accent-gradient-text: linear-gradient(135deg, #60A5FA 0%, #38BDF8 50%, #E2E8F0 100%);
+  --accent-gradient-surface: linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0%, rgba(14, 165, 233, 0.05) 100%);
 
   /* ATS Status Tokens */
   --status-success: #10b981;       /* Matched Skill */
@@ -54,10 +54,10 @@
   --status-info-border: rgba(59, 130, 246, 0.35);
 
   /* Typography Colors */
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
-  --text-inverse: #07090e;
+  --text-primary: #F1F5F9;
+  --text-secondary: #94A3B8;
+  --text-muted: #64748B;
+  --text-inverse: #0B0F19;
 
   /* Typography Scale */
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -85,9 +85,14 @@
   /* Elevation Shadows */
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.55);
-  --shadow-glow-purple: 0 0 30px var(--accent-primary-glow);
-  --shadow-glow-cyan: 0 0 30px var(--accent-cyan-glow);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.45);
+  --shadow-glow-purple: 0 0 20px rgba(37, 99, 235, 0.15);
+  --shadow-glow-cyan: 0 0 20px rgba(14, 165, 233, 0.10);
+
+  /* Layout Max Width & Z-indices */
+  --max-width: 1280px;
+  --z-sticky: 100;
+  --z-modal: 1000;
 
   /* Transitions */
   --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -122,7 +127,7 @@ body {
   position: relative;
 }
 
-/* Atmospheric Ambient Background */
+/* Atmospheric Ambient Background — Soft, Subdued Slate Blue Mist */
 body::before {
   content: '';
   position: fixed;
@@ -130,7 +135,7 @@ body::before {
   left: 20%;
   width: 60vw;
   height: 60vw;
-  background: radial-gradient(circle, rgba(139, 92, 246, 0.12) 0%, rgba(6, 182, 212, 0.05) 50%, transparent 70%);
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.06) 0%, rgba(14, 165, 233, 0.03) 50%, transparent 70%);
   filter: blur(80px);
   pointer-events: none;
   z-index: -1;
@@ -143,7 +148,7 @@ body::after {
   right: 10%;
   width: 45vw;
   height: 45vw;
-  background: radial-gradient(circle, rgba(6, 182, 212, 0.08) 0%, rgba(139, 92, 246, 0.04) 50%, transparent 70%);
+  background: radial-gradient(circle, rgba(14, 165, 233, 0.04) 0%, rgba(37, 99, 235, 0.02) 50%, transparent 70%);
   filter: blur(80px);
   pointer-events: none;
   z-index: -1;
@@ -212,6 +217,9 @@ p { color: var(--text-secondary); }
 .text-xs { font-size: 0.75rem; }
 .text-muted { color: var(--text-muted); }
 .text-bold { font-weight: 600; }
+.text-purple { color: #60A5FA; }
+.text-cyan { color: #38BDF8; }
+.text-success { color: var(--status-success); }
 
 /* ==========================================================================
    Glassmorphic Surface Containers
@@ -272,7 +280,7 @@ p { color: var(--text-secondary); }
 }
 
 .btn-primary:hover {
-  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.5);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35);
   transform: translateY(-1px);
   filter: brightness(1.08);
 }
@@ -296,7 +304,7 @@ p { color: var(--text-secondary); }
 }
 
 .btn-ghost:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(148, 163, 184, 0.08);
   color: var(--text-primary);
 }
 
@@ -375,7 +383,7 @@ p { color: var(--text-secondary); }
    ========================================================================== */
 .input-control, .textarea-control {
   width: 100%;
-  background: rgba(14, 18, 27, 0.8);
+  background: rgba(17, 24, 39, 0.85);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-md);
   padding: 0.75rem 1rem;
@@ -390,7 +398,7 @@ p { color: var(--text-secondary); }
   outline: none;
   border-color: var(--accent-primary);
   box-shadow: 0 0 0 3px var(--accent-primary-glow);
-  background: rgba(22, 27, 38, 0.95);
+  background: rgba(26, 35, 50, 0.95);
 }
 
 .textarea-control {
@@ -420,10 +428,10 @@ p { color: var(--text-secondary); }
 
 @keyframes pulseGlow {
   0%, 100% {
-    box-shadow: 0 0 15px var(--accent-primary-glow);
+    box-shadow: 0 0 12px var(--accent-primary-glow);
   }
   50% {
-    box-shadow: 0 0 30px rgba(139, 92, 246, 0.6);
+    box-shadow: 0 0 22px rgba(37, 99, 235, 0.35);
   }
 }
 

@@ -56,7 +56,7 @@
 .gauge-circle-val {
   fill: none;
   transition: stroke-dashoffset 0.8s ease-out, stroke 0.3s ease;
-  filter: drop-shadow(0 0 6px rgba(139, 92, 246, 0.4));
+  filter: drop-shadow(0 0 6px rgba(37, 99, 235, 0.35));
 }
 
 .gauge-center-content {

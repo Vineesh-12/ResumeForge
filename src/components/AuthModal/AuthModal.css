@@ -5,7 +5,7 @@
   border: 1px solid var(--glass-border);
   background: var(--bg-secondary);
   border-radius: var(--radius-xl);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 40px rgba(139, 92, 246, 0.15);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 30px rgba(37, 99, 235, 0.12);
 }
 
 .auth-brand-avatar {

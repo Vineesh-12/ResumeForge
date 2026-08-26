@@ -150,7 +150,7 @@ export default function ExportPage() {
           type="button"
           className="btn btn-secondary"
           onClick={() => navigate(`/p/${state.activeCloudResumeId || 'active'}`)}
-          style={{ borderColor: 'rgba(139, 92, 246, 0.4)', color: '#c4b5fd' }}
+          style={{ borderColor: 'rgba(37, 99, 235, 0.35)', color: '#93C5FD' }}
         >
           <span>🌐 View Shareable Web Portfolio</span>
         </button>

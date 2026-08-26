@@ -165,17 +165,17 @@
   align-items: center;
   gap: 6px;
   padding: 4px 10px;
-  background: rgba(139, 92, 246, 0.12);
-  border: 1px solid rgba(139, 92, 246, 0.3);
+  background: rgba(37, 99, 235, 0.10);
+  border: 1px solid rgba(37, 99, 235, 0.25);
   border-radius: var(--radius-md);
-  color: #c4b5fd;
+  color: #93C5FD;
   font-size: 0.8rem;
   text-decoration: none;
   transition: all var(--transition-fast);
 }
 
 .pub-link-chip:hover {
-  background: rgba(139, 92, 246, 0.25);
+  background: rgba(37, 99, 235, 0.20);
   transform: translateY(-1px);
 }
 
@@ -240,9 +240,9 @@
 }
 
 .pub-tech-chip.chip-cyan {
-  background: rgba(6, 182, 212, 0.1);
-  border-color: rgba(6, 182, 212, 0.25);
-  color: #67e8f9;
+  background: rgba(14, 165, 233, 0.10);
+  border-color: rgba(14, 165, 233, 0.22);
+  color: #7DD3FC;
 }
 
 .pub-tech-chip.chip-sm {
