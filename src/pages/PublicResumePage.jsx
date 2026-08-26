@@ -125,7 +125,7 @@ export default function PublicResumePage() {
   const certifications = resumeData.certifications || []
 
   // Dynamic QR Code URL
-  const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(window.location.href)}&color=f06a2a&bgcolor=ffffff`
+  const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(window.location.href)}&color=059669&bgcolor=ffffff`
 
   return (
     <div className="public-resume-page animate-fade-up">

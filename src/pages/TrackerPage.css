@@ -233,10 +233,10 @@
   gap: 4px;
   font-size: 0.7rem;
   color: var(--text-secondary);
-  background: #FFF7ED;
+  background: #ECFDF5;
   padding: 3px 6px;
   border-radius: var(--radius-sm);
-  border: 1px solid #FED7AA;
+  border: 1px solid #A7F3D0;
 }
 
 .app-notes-preview {

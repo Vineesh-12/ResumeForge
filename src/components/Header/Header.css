@@ -44,7 +44,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(240, 106, 42, 0.3);
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.28);
   flex-shrink: 0;
 }
 
@@ -130,10 +130,10 @@
 }
 
 .step-item.step-active {
-  background: #F06A2A;
+  background: #059669;
   color: #ffffff;
   font-weight: 600;
-  box-shadow: 0 2px 8px rgba(240, 106, 42, 0.3);
+  box-shadow: 0 2px 8px rgba(5, 150, 105, 0.3);
 }
 
 .step-item.step-active .step-badge {
@@ -175,7 +175,7 @@
 }
 
 .step-connector.connector-active {
-  background: #F06A2A;
+  background: #059669;
 }
 
 /* Header Actions */
@@ -205,7 +205,7 @@
 
 .btn-header-tracker:hover,
 .btn-header-tracker.tracker-active {
-  background: #F8FAFC;
+  background: #ECFDF5;
   border-color: var(--accent-primary);
   color: var(--accent-primary);
 }
@@ -267,17 +267,17 @@
   font-size: 0.8rem;
   font-weight: 600;
   border-radius: var(--radius-full);
-  background: #FFF7ED;
-  color: #C2410C;
-  border: 1px solid #FED7AA;
+  background: #ECFDF5;
+  color: #065F46;
+  border: 1px solid #A7F3D0;
   cursor: pointer;
   transition: all var(--transition-fast);
 }
 
 .btn-header-save:hover {
-  background: #F06A2A;
+  background: #059669;
   color: #ffffff;
-  border-color: #F06A2A;
+  border-color: #059669;
 }
 
 /* User Auth Profile Menu */
@@ -301,7 +301,7 @@
   width: 22px;
   height: 22px;
   border-radius: var(--radius-full);
-  background: #F06A2A;
+  background: #059669;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -356,7 +356,7 @@
 }
 
 .btn-header-signin:hover {
-  background: #F8FAFC;
+  background: #ECFDF5;
   border-color: var(--accent-primary);
   color: var(--accent-primary);
   transform: translateY(-1px);

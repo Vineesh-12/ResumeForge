@@ -12,12 +12,12 @@
   width: 36px;
   height: 36px;
   border-radius: var(--radius-full);
-  background: #F06A2A;
+  background: #059669;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #ffffff;
-  box-shadow: 0 2px 8px rgba(240, 106, 42, 0.3);
+  box-shadow: 0 2px 8px rgba(5, 150, 105, 0.3);
 }
 
 .auth-tab-bar {

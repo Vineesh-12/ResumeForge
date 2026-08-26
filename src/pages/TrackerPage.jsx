@@ -181,7 +181,7 @@ export default function TrackerPage() {
         </div>
 
         <div className="metric-card glass-card">
-          <div className="metric-icon-wrap" style={{ background: '#FFF7ED', color: '#EA580C' }}>
+          <div className="metric-icon-wrap" style={{ background: '#ECFDF5', color: '#059669' }}>
             <TrendingUp size={18} />
           </div>
           <div>
@@ -201,7 +201,7 @@ export default function TrackerPage() {
         </div>
 
         <div className="metric-card glass-card">
-          <div className="metric-icon-wrap" style={{ background: '#ECFDF5', color: '#059669' }}>
+          <div className="metric-icon-wrap" style={{ background: '#ECFDF5', color: '#047857' }}>
             <CheckCircle2 size={18} />
           </div>
           <div>

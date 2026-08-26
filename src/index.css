@@ -1,6 +1,6 @@
 /* ==========================================================================
    ResumeForge Design System — Core Design Tokens & Global CSS
-   Theme: JobStep.io Light SaaS Replica (Clean White & Warm Coral Orange)
+   Theme: Deep Forest Emerald & High-Trust Light SaaS
    ========================================================================== */
 
 :root {
@@ -16,41 +16,41 @@
   --glass-bg-hover: #F8FAFC;
   --glass-border: #E2E8F0;
   --glass-border-hover: #CBD5E1;
-  --glass-border-focus: #F06A2A;
+  --glass-border-focus: #059669;
   --glass-blur: blur(12px);
-  --glass-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.06), 0 2px 6px -1px rgba(0, 0, 0, 0.03);
+  --glass-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 2px 6px -1px rgba(0, 0, 0, 0.02);
 
-  /* Brand Accents & Gradients — JobStep Warm Coral Orange & Peach Gradient */
-  --accent-primary: #F06A2A;       /* JobStep Coral Orange */
-  --accent-primary-hover: #D85519;
-  --accent-primary-glow: rgba(240, 106, 42, 0.25);
+  /* Brand Accents & Gradients — Deep Forest Emerald */
+  --accent-primary: #059669;       /* Deep Forest Emerald */
+  --accent-primary-hover: #047857; /* Dark Forest Pine */
+  --accent-primary-glow: rgba(5, 150, 105, 0.25);
 
-  --accent-cyan: #0EA5E9;          /* Sky Blue Accent */
+  --accent-cyan: #0EA5E9;          /* Sky Blue Secondary Accent */
   --accent-cyan-hover: #0284C7;
   --accent-cyan-glow: rgba(14, 165, 233, 0.18);
 
-  --accent-gradient-primary: linear-gradient(135deg, #F06A2A 0%, #FF7E40 100%);
-  --accent-gradient-text: linear-gradient(135deg, #F06A2A 0%, #FF7E40 50%, #111827 100%);
-  --accent-gradient-hero: linear-gradient(225deg, #FFE0CF 0%, #FFEADE 25%, #F9F9F9 50%, #F9F9F9 75%, #F9F9F9 90%, #FFFFFF 100%);
-  --accent-gradient-surface: linear-gradient(135deg, rgba(240, 106, 42, 0.08) 0%, rgba(254, 215, 170, 0.15) 100%);
+  --accent-gradient-primary: linear-gradient(135deg, #059669 0%, #10B981 100%);
+  --accent-gradient-text: linear-gradient(135deg, #059669 0%, #10B981 50%, #064E3B 100%);
+  --accent-gradient-hero: linear-gradient(225deg, #D1FAE5 0%, #ECFDF5 25%, #F9F9F9 50%, #F9F9F9 75%, #F9F9F9 90%, #FFFFFF 100%);
+  --accent-gradient-surface: linear-gradient(135deg, rgba(5, 150, 105, 0.08) 0%, rgba(167, 243, 208, 0.20) 100%);
 
-  /* ATS Status Tokens (Clean Light Badges) */
-  --status-success: #10b981;       /* Matched Skill */
+  /* ATS Status Tokens */
+  --status-success: #059669;       /* Matched Skill */
   --status-success-bg: #ECFDF5;
   --status-success-border: #A7F3D0;
-  --status-success-glow: rgba(16, 185, 129, 0.2);
+  --status-success-glow: rgba(5, 150, 105, 0.2);
 
-  --status-warning: #f59e0b;       /* Partial / Synonym Match */
+  --status-warning: #D97706;       /* Partial / Synonym Match */
   --status-warning-bg: #FFFBEB;
   --status-warning-border: #FDE68A;
-  --status-warning-glow: rgba(245, 158, 11, 0.2);
+  --status-warning-glow: rgba(217, 119, 6, 0.2);
 
-  --status-danger: #ef4444;        /* Missing ATS Keyword */
+  --status-danger: #DC2626;        /* Missing ATS Keyword */
   --status-danger-bg: #FEF2F2;
   --status-danger-border: #FECACA;
-  --status-danger-glow: rgba(239, 68, 68, 0.2);
+  --status-danger-glow: rgba(220, 38, 38, 0.2);
 
-  --status-info: #3b82f6;
+  --status-info: #2563EB;
   --status-info-bg: #EFF6FF;
   --status-info-border: #BFDBFE;
 
@@ -87,10 +87,10 @@
 
   /* Elevation Shadows */
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
-  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.12);
-  --shadow-card: 0 20px 40px -15px rgba(0, 0, 0, 0.07), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.07);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.10);
+  --shadow-card: 0 20px 40px -15px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.04);
 
   /* Layout Max Width & Z-indices */
   --max-width: 1280px;
@@ -158,8 +158,8 @@ body {
 
 /* Selection */
 ::selection {
-  background: rgba(240, 106, 42, 0.2);
-  color: #0F172A;
+  background: rgba(5, 150, 105, 0.18);
+  color: #064E3B;
 }
 
 /* ==========================================================================
@@ -191,7 +191,7 @@ p { color: var(--text-secondary); }
 .text-xs { font-size: 0.75rem; }
 .text-muted { color: var(--text-muted); }
 .text-bold { font-weight: 600; }
-.text-purple { color: #F06A2A; }
+.text-purple { color: var(--accent-primary); }
 .text-cyan { color: #0EA5E9; }
 .text-success { color: var(--status-success); }
 
@@ -246,14 +246,14 @@ p { color: var(--text-secondary); }
 }
 
 .btn-primary {
-  background: #F06A2A;
+  background: #059669;
   color: #FFFFFF;
-  box-shadow: 0 4px 14px rgba(240, 106, 42, 0.3);
+  box-shadow: 0 4px 14px rgba(5, 150, 105, 0.28);
 }
 
 .btn-primary:hover {
-  background: #D85519;
-  box-shadow: 0 6px 20px rgba(240, 106, 42, 0.4);
+  background: #047857;
+  box-shadow: 0 6px 20px rgba(5, 150, 105, 0.38);
   transform: translateY(-1px);
 }
 
@@ -367,7 +367,7 @@ p { color: var(--text-secondary); }
 .input-control:focus, .textarea-control:focus {
   outline: none;
   border-color: var(--accent-primary);
-  box-shadow: 0 0 0 3px rgba(240, 106, 42, 0.15);
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15);
   background: #FFFFFF;
 }
 
@@ -398,10 +398,10 @@ p { color: var(--text-secondary); }
 
 @keyframes pulseGlow {
   0%, 100% {
-    box-shadow: 0 0 8px rgba(240, 106, 42, 0.2);
+    box-shadow: 0 0 8px rgba(5, 150, 105, 0.2);
   }
   50% {
-    box-shadow: 0 0 16px rgba(240, 106, 42, 0.35);
+    box-shadow: 0 0 16px rgba(5, 150, 105, 0.35);
   }
 }
 

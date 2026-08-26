@@ -69,9 +69,9 @@
 }
 
 .template-card-btn.active {
-  background: #FFF7ED;
-  border-color: #F06A2A;
-  box-shadow: 0 2px 10px rgba(240, 106, 42, 0.15);
+  background: #ECFDF5;
+  border-color: #059669;
+  box-shadow: 0 2px 10px rgba(5, 150, 105, 0.15);
 }
 
 .template-card-top {
@@ -109,7 +109,7 @@
   gap: 3px;
   font-size: 0.675rem;
   font-weight: 700;
-  color: #C2410C;
+  color: #047857;
   margin-top: 2px;
 }
 

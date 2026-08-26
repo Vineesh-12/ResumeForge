@@ -50,11 +50,11 @@
 }
 
 .sidebar-tab-btn.active {
-  background: #F06A2A;
+  background: #059669;
   color: #ffffff;
   font-weight: 600;
-  border-color: #F06A2A;
-  box-shadow: 0 2px 8px rgba(240, 106, 42, 0.25);
+  border-color: #059669;
+  box-shadow: 0 2px 8px rgba(5, 150, 105, 0.25);
 }
 
 .sidebar-guard-group {
