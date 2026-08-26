@@ -2,6 +2,8 @@ import React from 'react'
 import { Outlet } from 'react-router-dom'
 import Header from './components/Header/Header'
 import ApiKeyModal from './components/ApiKeyModal/ApiKeyModal'
+import AuthModal from './components/AuthModal/AuthModal'
+import DashboardModal from './components/DashboardModal/DashboardModal'
 import { useApp } from './context/AppContext'
 import { CheckCircle2, AlertCircle, Info, X } from 'lucide-react'
 import './App.css'
@@ -38,6 +40,12 @@ export default function App() {
 
       {/* API Key Modal Configuration */}
       <ApiKeyModal />
+
+      {/* Firebase Auth & User Login Modal */}
+      <AuthModal />
+
+      {/* Cloud "My Resumes" Saved Dashboard */}
+      <DashboardModal />
 
       {/* Minimal Footer */}
       <footer className="site-footer">

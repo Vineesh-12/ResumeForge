@@ -1,21 +1,19 @@
 .site-header {
   position: sticky;
   top: 0;
-  z-index: 100;
-  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  z-index: var(--z-sticky);
+  border-radius: 0;
   border-top: none;
   border-left: none;
   border-right: none;
-  background: rgba(14, 18, 27, 0.82);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  border-bottom: 1px solid var(--glass-border);
+  background: var(--bg-secondary);
 }
 
 .header-container {
-  max-width: 1400px;
+  max-width: var(--max-width);
   margin: 0 auto;
-  padding: 0.85rem var(--space-6);
+  padding: var(--space-3) var(--space-6);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -39,34 +37,45 @@
 .brand-icon {
   width: 40px;
   height: 40px;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   background: var(--accent-gradient-primary);
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 0 15px var(--accent-primary-glow);
+  flex-shrink: 0;
+}
+
+.brand-svg {
   color: #ffffff;
-  box-shadow: 0 2px 10px var(--accent-primary-glow);
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
 }
 
 .brand-title {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  font-size: 1.25rem;
+  font-family: var(--font-sans);
+  font-size: 1.2rem;
   font-weight: 800;
-  line-height: 1.1;
   letter-spacing: -0.02em;
+  line-height: 1.2;
 }
 
 .badge-free {
   font-size: 0.65rem;
-  font-weight: 700;
+  font-weight: 800;
   padding: 0.15rem 0.45rem;
   background: rgba(16, 185, 129, 0.15);
   color: var(--status-success);
-  border: 1px solid rgba(16, 185, 129, 0.35);
+  border: 1px solid rgba(16, 185, 129, 0.3);
   border-radius: var(--radius-full);
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
 .brand-sub {
@@ -79,9 +88,9 @@
 .stepper-nav {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  background: rgba(7, 9, 14, 0.6);
-  padding: 0.35rem 0.65rem;
+  gap: var(--space-1);
+  background: rgba(14, 18, 27, 0.6);
+  padding: 4px 8px;
   border-radius: var(--radius-full);
   border: 1px solid var(--glass-border);
 }
@@ -90,62 +99,62 @@
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  padding: 0.35rem 0.85rem;
+  padding: 0.4rem 0.85rem;
   border-radius: var(--radius-full);
   background: transparent;
-  border: 1px solid transparent;
-  color: var(--text-muted);
+  border: none;
   font-family: var(--font-sans);
-  font-size: 0.825rem;
+  font-size: 0.8rem;
   font-weight: 500;
+  color: var(--text-secondary);
   cursor: pointer;
-  transition: all var(--transition-normal);
+  transition: all var(--transition-fast);
+  white-space: nowrap;
 }
 
 .step-badge {
-  width: 26px;
-  height: 26px;
+  width: 22px;
+  height: 22px;
   border-radius: var(--radius-full);
-  background: var(--bg-tertiary);
-  border: 1px solid var(--glass-border);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-secondary);
-  transition: all var(--transition-normal);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--glass-border);
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  transition: all var(--transition-fast);
 }
 
-.step-label {
-  display: inline-block;
-}
-
-/* Active Step */
 .step-item.step-active {
-  background: var(--glass-bg-hover);
-  color: var(--text-primary);
-  border-color: rgba(139, 92, 246, 0.4);
-  box-shadow: 0 0 12px var(--accent-primary-glow);
+  background: var(--accent-gradient-primary);
+  color: #ffffff;
+  font-weight: 600;
+  box-shadow: 0 0 15px var(--accent-primary-glow);
 }
 
 .step-item.step-active .step-badge {
-  background: var(--accent-gradient-primary);
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.4);
   color: #ffffff;
-  border-color: transparent;
 }
 
-/* Completed Step */
-.step-item.step-completed .step-badge {
-  background: var(--status-success-bg);
-  border-color: var(--status-success-border);
+.step-item.step-completed:not(.step-active) {
+  color: var(--text-primary);
+}
+
+.step-item.step-completed:not(.step-active) .step-badge {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.4);
   color: var(--status-success);
 }
 
-.step-item.step-completed {
-  color: var(--text-secondary);
+.step-check {
+  color: var(--status-success);
 }
 
 .step-item.step-clickable:hover:not(.step-active) {
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--glass-bg-hover);
   color: var(--text-primary);
 }
 
@@ -156,7 +165,7 @@
 
 /* Step Connector Line */
 .step-connector {
-  width: 18px;
+  width: 14px;
   height: 2px;
   background: var(--glass-border);
   transition: all var(--transition-normal);
@@ -171,14 +180,141 @@
 .header-actions {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--space-2);
 }
 
+/* Cloud "My Resumes" Button */
+.btn-header-cloud {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.45rem 0.85rem;
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: var(--radius-full);
+  background: rgba(139, 92, 246, 0.12);
+  color: #c4b5fd;
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-header-cloud:hover {
+  background: rgba(139, 92, 246, 0.22);
+  border-color: rgba(139, 92, 246, 0.5);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+/* Quick Save Button */
+.btn-header-save {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0.45rem 0.75rem;
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: var(--radius-full);
+  background: rgba(59, 130, 246, 0.12);
+  color: #93c5fd;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-header-save:hover {
+  background: rgba(59, 130, 246, 0.22);
+  color: #ffffff;
+}
+
+/* User Auth Profile Menu */
+.user-profile-menu {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(22, 27, 38, 0.8);
+  border: 1px solid var(--glass-border);
+  padding: 3px 6px;
+  border-radius: var(--radius-full);
+}
+
+.user-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.user-avatar-mini {
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-full);
+  background: var(--accent-gradient-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.user-chip-name {
+  font-size: 0.775rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  max-width: 90px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.btn-logout {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 3px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--transition-fast);
+}
+
+.btn-logout:hover {
+  color: #ef4444;
+}
+
+/* Sign In Trigger */
+.btn-header-signin {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.45rem 0.85rem;
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+  border: 1px solid var(--glass-border);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-header-signin:hover {
+  background: var(--glass-bg-hover);
+  border-color: var(--accent-primary);
+  transform: translateY(-1px);
+}
+
+/* API Key Badge */
 .btn-api-key {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
-  padding: 0.45rem 0.85rem;
+  gap: 6px;
+  padding: 0.45rem 0.8rem;
   font-family: var(--font-sans);
   font-size: 0.8rem;
   font-weight: 600;
@@ -213,7 +349,17 @@
   box-shadow: 0 0 6px currentColor;
 }
 
+.btn-header-reset {
+  padding: 0.45rem;
+}
+
 /* Responsive adjustments */
+@media (max-width: 1024px) {
+  .header-btn-text {
+    display: none;
+  }
+}
+
 @media (max-width: 900px) {
   .step-label {
     display: none;

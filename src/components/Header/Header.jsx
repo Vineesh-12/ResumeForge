@@ -1,7 +1,21 @@
 import React from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { FileUp, BarChart3, Wand2, Download, KeyRound, RotateCcw, Check, ShieldCheck } from 'lucide-react'
+import {
+  FileUp,
+  BarChart3,
+  Wand2,
+  Download,
+  KeyRound,
+  RotateCcw,
+  Check,
+  ShieldCheck,
+  User,
+  Cloud,
+  LogOut,
+  FolderOpen
+} from 'lucide-react'
 import { useApp } from '../../context/AppContext'
+import { signOutUser } from '../../services/firebase'
 import './Header.css'
 
 const STEPS = [
@@ -20,7 +34,6 @@ export default function Header() {
   const currentStep = currentStepObj.id
 
   const handleStepClick = (step) => {
-    // Allow navigation to step 1 anytime, or to steps that are already completed
     if (step.id === 1 || state.completedSteps[step.id] || step.id <= currentStep) {
       navigate(step.path)
     }
@@ -32,6 +45,32 @@ export default function Header() {
       navigate('/')
     }
   }
+
+  const handleOpenAuth = () => {
+    dispatch({ type: 'TOGGLE_AUTH_MODAL', payload: true })
+  }
+
+  const handleOpenDashboard = () => {
+    if (!state.currentUser) {
+      dispatch({ type: 'TOGGLE_AUTH_MODAL', payload: true })
+    } else {
+      dispatch({ type: 'TOGGLE_DASHBOARD_MODAL', payload: true })
+    }
+  }
+
+  const handleSignOut = async () => {
+    try {
+      await signOutUser()
+      dispatch({
+        type: 'SET_TOAST',
+        payload: { message: 'Signed out successfully.', type: 'info' }
+      })
+    } catch (err) {
+      console.error('Sign out error:', err)
+    }
+  }
+
+  const activeResume = state.tailoredResume || state.resumeParsed
 
   return (
     <header className="site-header glass-card">
@@ -92,6 +131,67 @@ export default function Header() {
 
         {/* Header Right Actions */}
         <div className="header-actions">
+          {/* Cloud "My Resumes" Button */}
+          <button
+            type="button"
+            className="btn-header-cloud"
+            onClick={handleOpenDashboard}
+            title={state.currentUser ? 'Open My Saved Resumes Dashboard' : 'Sign in to view saved resumes'}
+          >
+            <FolderOpen size={15} />
+            <span className="header-btn-text">
+              My Resumes {state.userResumes.length > 0 ? `(${state.userResumes.length})` : ''}
+            </span>
+          </button>
+
+          {/* Quick "Save to Cloud" Button if resume is active */}
+          {activeResume && (
+            <button
+              type="button"
+              className="btn-header-save"
+              onClick={handleOpenDashboard}
+              title="Save current resume to cloud"
+            >
+              <Cloud size={14} />
+              <span className="header-btn-text">Save</span>
+            </button>
+          )}
+
+          {/* User Auth Chip */}
+          {state.currentUser ? (
+            <div className="user-profile-menu">
+              <div className="user-chip" title={state.currentUser.email}>
+                <div className="user-avatar-mini">
+                  {state.currentUser.displayName ? (
+                    state.currentUser.displayName.charAt(0).toUpperCase()
+                  ) : (
+                    <User size={13} />
+                  )}
+                </div>
+                <span className="user-chip-name">
+                  {state.currentUser.displayName || state.currentUser.email.split('@')[0]}
+                </span>
+              </div>
+              <button
+                type="button"
+                className="btn-logout"
+                onClick={handleSignOut}
+                title="Log out of account"
+              >
+                <LogOut size={14} />
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              className="btn-header-signin"
+              onClick={handleOpenAuth}
+            >
+              <User size={14} />
+              <span>Sign In</span>
+            </button>
+          )}
+
           {/* API Key Status & Config Trigger */}
           <button
             type="button"
@@ -99,7 +199,7 @@ export default function Header() {
             onClick={() => dispatch({ type: 'TOGGLE_API_KEY_MODAL', payload: true })}
             title={state.apiKey ? 'Gemini API Key Connected (Click to change)' : 'Set Gemini API Key'}
           >
-            <KeyRound size={15} />
+            <KeyRound size={14} />
             <span className="api-key-text">
               {state.apiKey ? 'AI Ready' : 'Set API Key'}
             </span>
@@ -110,12 +210,11 @@ export default function Header() {
           {(state.resumeFile || state.jobDescription) && (
             <button
               type="button"
-              className="btn btn-ghost btn-sm"
+              className="btn btn-ghost btn-sm btn-header-reset"
               onClick={handleReset}
               title="Reset & Start New"
             >
               <RotateCcw size={14} />
-              <span>Reset</span>
             </button>
           )}
         </div>

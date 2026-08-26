@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react'
+import { subscribeToAuthChanges, getUserResumes } from '../services/firebase'
 
 const AppContext = createContext(null)
 
@@ -9,6 +10,14 @@ const initialState = {
   // API Authentication
   apiKey: localStorage.getItem(STORAGE_KEY) || ENV_KEY,
   showApiKeyModal: false,
+
+  // Firebase User Authentication & Cloud Sync
+  currentUser: null,
+  isAuthLoading: true,
+  showAuthModal: false,
+  showDashboardModal: false,
+  userResumes: [],
+  activeCloudResumeId: null,
 
   // Resume Data
   resumeFile: null,
@@ -72,6 +81,54 @@ function appReducer(state, action) {
         showApiKeyModal: action.payload !== undefined ? action.payload : !state.showApiKeyModal
       }
 
+    // --- Firebase Auth & Cloud Actions ---
+    case 'SET_CURRENT_USER':
+      return {
+        ...state,
+        currentUser: action.payload,
+        isAuthLoading: false
+      }
+
+    case 'TOGGLE_AUTH_MODAL':
+      return {
+        ...state,
+        showAuthModal: action.payload !== undefined ? action.payload : !state.showAuthModal
+      }
+
+    case 'TOGGLE_DASHBOARD_MODAL':
+      return {
+        ...state,
+        showDashboardModal: action.payload !== undefined ? action.payload : !state.showDashboardModal
+      }
+
+    case 'SET_USER_RESUMES':
+      return {
+        ...state,
+        userResumes: action.payload || []
+      }
+
+    case 'SET_ACTIVE_CLOUD_RESUME_ID':
+      return {
+        ...state,
+        activeCloudResumeId: action.payload
+      }
+
+    case 'LOAD_CLOUD_RESUME': {
+      const cloudResume = action.payload
+      const rData = cloudResume.resumeData || {}
+      return {
+        ...state,
+        activeCloudResumeId: cloudResume.id,
+        tailoredResume: rData,
+        resumeParsed: rData,
+        atsScore: cloudResume.atsScore || 90,
+        atsGrade: cloudResume.atsGrade || 'A',
+        showDashboardModal: false,
+        completedSteps: { 1: true, 2: true, 3: true, 4: false },
+        toast: { message: `Loaded "${cloudResume.title || 'Saved Resume'}" successfully!`, type: 'success' }
+      }
+    }
+
     case 'SET_RESUME_DATA':
       return {
         ...state,
@@ -89,7 +146,8 @@ function appReducer(state, action) {
         resumeFileName: '',
         resumeFileSize: 0,
         resumeRawText: '',
-        resumeParsed: null
+        resumeParsed: null,
+        activeCloudResumeId: null
       }
 
     case 'SET_JOB_DESCRIPTION':
@@ -177,7 +235,9 @@ function appReducer(state, action) {
     case 'RESET_ALL':
       return {
         ...initialState,
-        apiKey: state.apiKey
+        apiKey: state.apiKey,
+        currentUser: state.currentUser,
+        isAuthLoading: false
       }
 
     default:
@@ -187,6 +247,25 @@ function appReducer(state, action) {
 
 export function AppProvider({ children }) {
   const [state, dispatch] = useReducer(appReducer, initialState)
+
+  // Listen to Firebase Auth state changes
+  useEffect(() => {
+    const unsubscribe = subscribeToAuthChanges(async (user) => {
+      dispatch({ type: 'SET_CURRENT_USER', payload: user })
+      if (user) {
+        try {
+          const resumes = await getUserResumes(user.uid)
+          dispatch({ type: 'SET_USER_RESUMES', payload: resumes })
+        } catch (err) {
+          console.warn('Failed to load user resumes on login:', err)
+        }
+      } else {
+        dispatch({ type: 'SET_USER_RESUMES', payload: [] })
+      }
+    })
+
+    return () => unsubscribe()
+  }, [])
 
   return (
     <AppContext.Provider value={{ state, dispatch }}>
