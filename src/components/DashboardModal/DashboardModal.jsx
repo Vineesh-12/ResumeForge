@@ -5,15 +5,12 @@ import {
   FileText,
   Trash2,
   ExternalLink,
-  Plus,
   Cloud,
   Check,
   Calendar,
   Sparkles,
-  ShieldCheck,
   RotateCw,
-  Award,
-  AlertCircle
+  Award
 } from 'lucide-react'
 import {
   getUserResumes,
@@ -32,6 +29,19 @@ export default function DashboardModal() {
   const [deleteConfirmId, setDeleteConfirmId] = useState(null)
 
   const activeResume = state.tailoredResume || state.resumeParsed
+
+  const loadResumes = async () => {
+    if (!state.currentUser) return
+    setIsLoadingResumes(true)
+    try {
+      const list = await getUserResumes(state.currentUser.uid)
+      dispatch({ type: 'SET_USER_RESUMES', payload: list })
+    } catch (err) {
+      console.error('Failed to load user resumes:', err)
+    } finally {
+      setIsLoadingResumes(false)
+    }
+  }
 
   useEffect(() => {
     if (state.showDashboardModal && state.currentUser) {
@@ -53,18 +63,7 @@ export default function DashboardModal() {
     dispatch({ type: 'TOGGLE_DASHBOARD_MODAL', payload: false })
   }
 
-  const loadResumes = async () => {
-    if (!state.currentUser) return
-    setIsLoadingResumes(true)
-    try {
-      const list = await getUserResumes(state.currentUser.uid)
-      dispatch({ type: 'SET_USER_RESUMES', payload: list })
-    } catch (err) {
-      console.error('Failed to load user resumes:', err)
-    } finally {
-      setIsLoadingResumes(false)
-    }
-  }
+
 
   const handleSaveCurrent = async (e) => {
     e?.preventDefault()

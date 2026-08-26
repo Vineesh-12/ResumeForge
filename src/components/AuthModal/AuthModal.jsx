@@ -9,7 +9,6 @@ import {
   Eye,
   EyeOff,
   AlertCircle,
-  CheckCircle2,
   Sparkles
 } from 'lucide-react'
 import {

@@ -1,5 +1,5 @@
 import React from 'react'
-import { CheckCircle2, AlertTriangle, XCircle, BarChart2, Layers } from 'lucide-react'
+import { CheckCircle2, AlertTriangle, XCircle, BarChart2 } from 'lucide-react'
 import SkillBadge from '../SkillBadge/SkillBadge'
 import './GapAnalysis.css'
 

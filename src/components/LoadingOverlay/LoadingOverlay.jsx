@@ -1,5 +1,5 @@
 import React from 'react'
-import { Sparkles, CheckCircle2, RefreshCw, Cpu, ShieldCheck } from 'lucide-react'
+import { CheckCircle2, RefreshCw, Cpu, ShieldCheck } from 'lucide-react'
 import './LoadingOverlay.css'
 
 export default function LoadingOverlay({

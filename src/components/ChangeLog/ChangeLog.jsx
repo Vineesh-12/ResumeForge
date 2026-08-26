@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Sparkles, ChevronDown, ChevronUp, CheckCircle2, ArrowRight } from 'lucide-react'
+import { Sparkles, ChevronDown, ChevronUp } from 'lucide-react'
 import './ChangeLog.css'
 
 export default function ChangeLog({ changes = [] }) {

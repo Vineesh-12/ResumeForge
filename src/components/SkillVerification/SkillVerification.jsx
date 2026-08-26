@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { ShieldCheck, Check, X, Sparkles, AlertCircle } from 'lucide-react'
+import { ShieldCheck, Check, X } from 'lucide-react'
 import './SkillVerification.css'
 
 export default function SkillVerification({

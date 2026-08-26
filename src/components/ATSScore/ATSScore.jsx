@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { ShieldCheck, TrendingUp, AlertCircle, Award } from 'lucide-react'
+import { ShieldCheck, TrendingUp } from 'lucide-react'
 import './ATSScore.css'
 
 export default function ATSScore({

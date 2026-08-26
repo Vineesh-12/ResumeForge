@@ -224,7 +224,10 @@ export default function TailorPage() {
         }
       })
     } catch (err) {
-      alert('Re-tailoring failed: ' + err.message)
+      dispatch({
+        type: 'SET_ERROR',
+        payload: 'Re-tailoring failed: ' + (err.message || 'Unknown error')
+      })
     } finally {
       setIsTailoring(false)
     }
