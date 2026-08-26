@@ -1,7 +1,25 @@
 {
-  "name": "jd",
-  "private": true,
-  "version": "0.0.0",
+  "name": "resumeforge-ai",
+  "version": "1.0.0",
+  "description": "Free, 100% in-browser AI ATS Resume Tailor & Copilot. Analyzes job descriptions, identifies skill gaps, and exports Harvard-Jake standard ATS PDFs.",
+  "homepage": "https://resume-forge-psi.vercel.app/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Vineesh-12/ResumeForge.git"
+  },
+  "keywords": [
+    "resume-builder",
+    "ats-resume",
+    "resume-tailor",
+    "gemini-ai",
+    "harvard-resume",
+    "react19",
+    "vite",
+    "career-tools"
+  ],
+  "author": "Vineesh Reddy <https://github.com/Vineesh-12>",
+  "license": "MIT",
+  "private": false,
   "type": "module",
   "scripts": {
     "dev": "vite",
