@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "ResumeForge AI — 1-Click Job Tailor",
+  "version": "1.0.0",
+  "description": "1-Click import job descriptions from LinkedIn, Indeed, Greenhouse, and Lever into ResumeForge to tailor your ATS resume.",
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Tailor Resume for this Job"
+  },
+  "permissions": [
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ]
+}

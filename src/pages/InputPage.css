@@ -90,6 +90,91 @@
   color: #67e8f9;
 }
 
+/* JD Tab Switcher */
+.jd-tab-switcher {
+  display: flex;
+  background: rgba(7, 9, 14, 0.6);
+  padding: 4px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--glass-border);
+  gap: 4px;
+}
+
+.jd-tab-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0.45rem 0.75rem;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.jd-tab-btn.active {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.badge-new {
+  font-size: 0.65rem;
+  font-weight: 700;
+  background: rgba(139, 92, 246, 0.3);
+  color: #c4b5fd;
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+}
+
+/* URL Import Panel */
+.jd-url-import-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: rgba(7, 9, 14, 0.5);
+  border-radius: var(--radius-lg);
+  border: 1px dashed var(--glass-border);
+}
+
+.jd-url-form {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.input-url-wrapper {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.url-icon {
+  position: absolute;
+  left: 12px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.jd-url-input {
+  padding-left: 36px;
+  font-size: 0.85rem;
+}
+
+.btn-scrape {
+  white-space: nowrap;
+  padding: 0.55rem 1rem;
+  font-size: 0.85rem;
+}
+
 /* Upload Zone Staging */
 .upload-placeholder-zone {
   min-height: 240px;
@@ -158,7 +243,21 @@
 
 .jd-footer {
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.btn-clear-jd {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+.btn-clear-jd:hover {
+  color: #ef4444;
 }
 
 /* CTA Bar */

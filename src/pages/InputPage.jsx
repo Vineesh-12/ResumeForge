@@ -1,6 +1,15 @@
-import React, { useState } from 'react'
-import { FileUp, Sparkles, ArrowRight, CheckCircle2 } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import React, { useState, useEffect } from 'react'
+import {
+  FileUp,
+  Sparkles,
+  ArrowRight,
+  CheckCircle2,
+  Globe,
+  FileText,
+  RotateCw,
+  Link as LinkIcon
+} from 'lucide-react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 import ResumeUpload from '../components/ResumeUpload/ResumeUpload'
 import LoadingOverlay from '../components/LoadingOverlay/LoadingOverlay'
@@ -8,11 +17,17 @@ import { parseResumeWithAI } from '../services/resumeAnalyzer'
 import { parseJobDescriptionWithAI } from '../services/jdAnalyzer'
 import { analyzeCompetencyGaps } from '../services/gapAnalyzer'
 import { calculateATSScore } from '../services/atsScorer'
+import { scrapeJobDescriptionFromUrl } from '../services/jdScraper'
 import './InputPage.css'
 
 export default function InputPage() {
   const { state, dispatch } = useApp()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+
+  const [jdTab, setJdTab] = useState('text') // 'text' | 'url'
+  const [jobUrl, setJobUrl] = useState('')
+  const [isScraping, setIsScraping] = useState(false)
 
   const [aiState, setAiState] = useState({
     isLoading: false,
@@ -21,8 +36,64 @@ export default function InputPage() {
     progress: 0
   })
 
+  // Handle Chrome Extension or query param pre-fills (?jd=... or ?jdUrl=...)
+  useEffect(() => {
+    const jdParam = searchParams.get('jd')
+    const urlParam = searchParams.get('jdUrl')
+
+    if (jdParam && !state.jobDescription) {
+      dispatch({ type: 'SET_JOB_DESCRIPTION', payload: jdParam })
+      dispatch({
+        type: 'SET_TOAST',
+        payload: { message: 'Job Description imported from browser extension!', type: 'success' }
+      })
+    } else if (urlParam && !state.jobDescription) {
+      setJobUrl(urlParam)
+      setJdTab('url')
+    }
+  }, [searchParams])
+
   const hasResume = Boolean(state.resumeRawText && state.resumeRawText.trim().length > 0)
   const hasJD = Boolean(state.jobDescription && state.jobDescription.trim().length > 30)
+
+  const handleScrapeUrl = async (e) => {
+    e?.preventDefault()
+    if (!jobUrl || !jobUrl.trim()) {
+      dispatch({ type: 'SET_ERROR', payload: 'Please enter a valid job posting URL.' })
+      return
+    }
+
+    if (!state.apiKey) {
+      dispatch({ type: 'TOGGLE_API_KEY_MODAL', payload: true })
+      dispatch({
+        type: 'SET_ERROR',
+        payload: 'Please enter your Gemini API key to use the Job URL Auto-Scraper.'
+      })
+      return
+    }
+
+    setIsScraping(true)
+    try {
+      const result = await scrapeJobDescriptionFromUrl(jobUrl, state.apiKey)
+      dispatch({ type: 'SET_JOB_DESCRIPTION', payload: result.rawDescription })
+      setJdTab('text')
+      dispatch({
+        type: 'SET_TOAST',
+        payload: {
+          message: `Successfully extracted "${result.jobTitle}" from ${result.company}!`,
+          type: 'success'
+        }
+      })
+    } catch (err) {
+      console.error('Scraping error:', err)
+      dispatch({
+        type: 'SET_ERROR',
+        payload: err.message || 'Could not extract job description from URL. Please paste text directly.'
+      })
+    } finally {
+      setIsScraping(false)
+    }
+  }
 
   const handleStartAnalysis = async () => {
     if (!hasResume) {
@@ -145,7 +216,7 @@ export default function InputPage() {
           Tailor Your Resume for <span className="text-gradient">Any Job in Seconds</span>
         </h1>
         <p className="page-subtitle">
-          Upload your existing resume PDF and paste the target job description. 
+          Upload your existing resume PDF and paste the target job description or job URL. 
           Our AI extracts keywords, detects gaps, and reformats into the battle-tested Harvard-Jake ATS format.
         </p>
       </div>
@@ -173,15 +244,15 @@ export default function InputPage() {
           <ResumeUpload />
         </div>
 
-        {/* Right: Job Description Card */}
+        {/* Right: Job Description Card with Dual-Input Tabs */}
         <div className="glass-card input-card">
           <div className="card-header">
             <div className="card-icon-badge badge-cyan">
               <Sparkles size={20} />
             </div>
             <div>
-              <h3>2. Paste Job Description</h3>
-              <p className="text-sm text-muted">Target role requirements, skills &amp; keywords</p>
+              <h3>2. Job Description</h3>
+              <p className="text-sm text-muted">Paste job text or import directly from URL</p>
             </div>
             {hasJD && (
               <span className="badge badge-success" style={{ marginLeft: 'auto' }}>
@@ -190,20 +261,91 @@ export default function InputPage() {
             )}
           </div>
 
-          <div className="jd-placeholder-zone">
-            <textarea
-              className="textarea-control jd-textarea"
-              placeholder="Paste the full job posting here (e.g. from LinkedIn, Indeed, Greenhouse, Workday, Lever)..."
-              value={state.jobDescription}
-              onChange={(e) => dispatch({ type: 'SET_JOB_DESCRIPTION', payload: e.target.value })}
-              rows={8}
-            />
-            <div className="jd-footer">
+          {/* Tab Selection */}
+          <div className="jd-tab-switcher">
+            <button
+              type="button"
+              className={`jd-tab-btn ${jdTab === 'text' ? 'active' : ''}`}
+              onClick={() => setJdTab('text')}
+            >
+              <FileText size={14} />
+              <span>Paste Text</span>
+            </button>
+            <button
+              type="button"
+              className={`jd-tab-btn ${jdTab === 'url' ? 'active' : ''}`}
+              onClick={() => setJdTab('url')}
+            >
+              <Globe size={14} />
+              <span>Import from Job URL</span>
+              <span className="badge-new">New</span>
+            </button>
+          </div>
+
+          {jdTab === 'url' ? (
+            <div className="jd-url-import-panel">
+              <p className="text-xs text-muted" style={{ marginBottom: 'var(--space-2)' }}>
+                Paste any job posting URL from <strong>LinkedIn</strong>, <strong>Indeed</strong>, <strong>Greenhouse</strong>, <strong>Lever</strong>, or company careers pages:
+              </p>
+              <form onSubmit={handleScrapeUrl} className="jd-url-form">
+                <div className="input-url-wrapper">
+                  <LinkIcon size={16} className="url-icon" />
+                  <input
+                    type="url"
+                    className="input-control jd-url-input"
+                    placeholder="https://www.linkedin.com/jobs/view/..."
+                    value={jobUrl}
+                    onChange={(e) => setJobUrl(e.target.value)}
+                    required
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="btn btn-primary btn-scrape"
+                  disabled={isScraping || !jobUrl.trim()}
+                >
+                  {isScraping ? (
+                    <>
+                      <RotateCw size={14} className="animate-spin" />
+                      <span>Extracting...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles size={14} />
+                      <span>Extract &amp; Fill</span>
+                    </>
+                  )}
+                </button>
+              </form>
               <span className="text-xs text-muted">
-                {state.jobDescription.length} characters
+                💡 AI will automatically parse the company, title, and requirements.
               </span>
             </div>
-          </div>
+          ) : (
+            <div className="jd-placeholder-zone">
+              <textarea
+                className="textarea-control jd-textarea"
+                placeholder="Paste the full job posting here (e.g. from LinkedIn, Indeed, Greenhouse, Workday, Lever)..."
+                value={state.jobDescription}
+                onChange={(e) => dispatch({ type: 'SET_JOB_DESCRIPTION', payload: e.target.value })}
+                rows={8}
+              />
+              <div className="jd-footer">
+                <span className="text-xs text-muted">
+                  {state.jobDescription.length} characters
+                </span>
+                {state.jobDescription && (
+                  <button
+                    type="button"
+                    className="btn-clear-jd"
+                    onClick={() => dispatch({ type: 'SET_JOB_DESCRIPTION', payload: '' })}
+                  >
+                    Clear Text
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

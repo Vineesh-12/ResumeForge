@@ -7,6 +7,8 @@ import InputPage from './pages/InputPage'
 import AnalysisPage from './pages/AnalysisPage'
 import TailorPage from './pages/TailorPage'
 import ExportPage from './pages/ExportPage'
+import TrackerPage from './pages/TrackerPage'
+import PublicResumePage from './pages/PublicResumePage'
 import './index.css'
 
 createRoot(document.getElementById('root')).render(
@@ -19,6 +21,8 @@ createRoot(document.getElementById('root')).render(
             <Route path="analyze" element={<AnalysisPage />} />
             <Route path="tailor" element={<TailorPage />} />
             <Route path="export" element={<ExportPage />} />
+            <Route path="tracker" element={<TrackerPage />} />
+            <Route path="p/:id" element={<PublicResumePage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Routes>

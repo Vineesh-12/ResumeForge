@@ -145,6 +145,16 @@ export default function ExportPage() {
           <ArrowLeft size={16} />
           <span>Back to Live Editor &amp; Copilot</span>
         </button>
+
+        <button
+          type="button"
+          className="btn btn-secondary"
+          onClick={() => navigate(`/p/${state.activeCloudResumeId || 'active'}`)}
+          style={{ borderColor: 'rgba(139, 92, 246, 0.4)', color: '#c4b5fd' }}
+        >
+          <span>🌐 View Shareable Web Portfolio</span>
+        </button>
+
         <button
           type="button"
           className="btn btn-ghost"
