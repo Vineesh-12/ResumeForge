@@ -162,62 +162,183 @@
   border-radius: var(--radius-xl);
   min-height: 780px;
   box-shadow: var(--shadow-sm);
+  overflow: hidden;
 }
 
-.pdf-frame-header {
+.pdf-toolbar-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding-bottom: var(--space-3);
   border-bottom: 1px solid var(--glass-border);
+  gap: var(--space-2);
+  flex-wrap: wrap;
 }
 
-.frame-title-group {
+.frame-meta-bar {
   display: flex;
   align-items: center;
   gap: var(--space-2);
 }
 
-.frame-title-group h4 {
-  font-size: 0.95rem;
-  font-weight: 700;
-  margin: 0;
-}
-
-.badge-ats-clean {
-  font-size: 0.65rem;
-  font-weight: 800;
-  padding: 0.15rem 0.5rem;
-  background: #ECFDF5;
-  color: #065F46;
-  border: 1px solid #A7F3D0;
+/* Zoom Controls */
+.pdf-zoom-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #FFFFFF;
+  border: 1px solid var(--glass-border);
+  padding: 3px 6px;
   border-radius: var(--radius-full);
 }
 
-.pdf-document-viewport {
-  flex: 1;
+.btn-zoom-action {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: var(--radius-full);
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 680px;
+  transition: all var(--transition-fast);
+}
+
+.btn-zoom-action:hover:not(:disabled) {
+  background: #F1F5F9;
+  color: var(--text-primary);
+}
+
+.btn-zoom-action:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.zoom-percentage-btn {
+  background: transparent;
+  border: none;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  padding: 2px 6px;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+}
+
+.zoom-percentage-btn:hover {
+  background: #F1F5F9;
+}
+
+/* Frame Canvas Wrap */
+.frame-canvas-wrap {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
   background: #E2E8F0;
   border-radius: var(--radius-lg);
-  overflow: hidden;
+  overflow: auto;
+  min-height: 700px;
+  padding: var(--space-4);
   position: relative;
 }
 
-.pdf-viewer-embed {
+.pdf-viewport-zoom-wrapper {
   width: 100%;
   height: 100%;
-  min-height: 680px;
-  border: none;
+  min-height: 700px;
+  display: flex;
+  justify-content: center;
 }
 
-.pdf-render-fallback {
+.live-pdf-iframe {
+  width: 100%;
+  height: 740px;
+  border: none;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  background: #FFFFFF;
+}
+
+.blob-loading-state {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: var(--space-3);
-  color: var(--text-muted);
+  margin-top: 150px;
+}
+
+.blob-fallback-sheet {
+  background: #ffffff;
+  padding: var(--space-6);
+  border-radius: var(--radius-md);
+  color: #000;
+}
+
+/* Fullscreen Overlay */
+.pdf-fullscreen-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(12px);
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-4);
+  gap: var(--space-3);
+}
+
+.fullscreen-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2) var(--space-4);
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.fullscreen-title-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.fullscreen-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.btn-close-fullscreen {
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.8;
+  transition: opacity var(--transition-fast);
+}
+
+.btn-close-fullscreen:hover {
+  opacity: 1;
+}
+
+.fullscreen-iframe-container {
+  flex: 1;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.fullscreen-pdf-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
 }

@@ -6,7 +6,14 @@ import {
   Check,
   FileText,
   CheckCircle2,
-  Layout
+  Layout,
+  ZoomIn,
+  ZoomOut,
+  Maximize2,
+  Minimize2,
+  Maximize,
+  RotateCcw,
+  X
 } from 'lucide-react'
 import HarvardJakeTemplate from '../../templates/HarvardJakeTemplate'
 import TechLeadMinimalistTemplate from '../../templates/TechLeadMinimalistTemplate'
@@ -44,6 +51,8 @@ const TEMPLATES = [
 export default function PDFPreview({ resumeData, targetRole = 'Software_Engineer' }) {
   const [copied, setCopied] = useState(false)
   const [selectedTemplate, setSelectedTemplate] = useState('harvard')
+  const [zoomLevel, setZoomLevel] = useState(100)
+  const [isFullscreen, setIsFullscreen] = useState(false)
 
   if (!resumeData) return null
 
@@ -54,6 +63,18 @@ export default function PDFPreview({ resumeData, targetRole = 'Software_Engineer
     .replace(/\s+/g, '_')
     .replace(/[^a-zA-Z0-9_]/g, '')
   const fileName = `Resume_${cleanName}_${cleanRole}_${selectedTemplate}.pdf`
+
+  const handleZoomIn = () => {
+    setZoomLevel(prev => Math.min(prev + 25, 175))
+  }
+
+  const handleZoomOut = () => {
+    setZoomLevel(prev => Math.max(prev - 25, 50))
+  }
+
+  const handleResetZoom = () => {
+    setZoomLevel(100)
+  }
 
   // Render selected React PDF Document
   const renderPdfDocument = () => {
@@ -260,12 +281,55 @@ export default function PDFPreview({ resumeData, targetRole = 'Software_Engineer
 
       {/* Live PDF Document Frame Preview */}
       <div className="glass-card pdf-live-frame-container">
-        <div className="frame-meta-bar">
-          <span className="text-xs text-muted">File: {fileName}</span>
-          <span className="badge badge-info">Template: {TEMPLATES.find(t => t.id === selectedTemplate)?.name}</span>
+        {/* PDF Zoom & View Controls Toolbar */}
+        <div className="pdf-toolbar-top">
+          <div className="frame-meta-bar">
+            <span className="text-xs text-muted">File: {fileName}</span>
+            <span className="badge badge-info">Template: {TEMPLATES.find(t => t.id === selectedTemplate)?.name}</span>
+          </div>
+
+          <div className="pdf-zoom-controls">
+            <button
+              type="button"
+              className="btn-zoom-action"
+              title="Zoom Out"
+              disabled={zoomLevel <= 50}
+              onClick={handleZoomOut}
+            >
+              <ZoomOut size={15} />
+            </button>
+
+            <button
+              type="button"
+              className="zoom-percentage-btn"
+              title="Reset Zoom"
+              onClick={handleResetZoom}
+            >
+              {zoomLevel}%
+            </button>
+
+            <button
+              type="button"
+              className="btn-zoom-action"
+              title="Zoom In"
+              disabled={zoomLevel >= 175}
+              onClick={handleZoomIn}
+            >
+              <ZoomIn size={15} />
+            </button>
+
+            <button
+              type="button"
+              className="btn-zoom-action"
+              title="Fullscreen View"
+              onClick={() => setIsFullscreen(true)}
+            >
+              <Maximize2 size={15} />
+            </button>
+          </div>
         </div>
 
-        {/* Render PDF blob in an iframe */}
+        {/* Render PDF blob in an iframe with Zoom scaling */}
         <div className="frame-canvas-wrap">
           <BlobProvider document={activeDoc}>
             {({ url, loading, error }) => {
@@ -291,17 +355,69 @@ export default function PDFPreview({ resumeData, targetRole = 'Software_Engineer
                 )
               }
               return (
-                <iframe
-                  key={selectedTemplate}
-                  src={`${url}#toolbar=0&navpanes=0&scrollbar=1`}
-                  className="live-pdf-iframe"
-                  title="ATS Resume PDF Preview"
-                />
+                <div
+                  className="pdf-viewport-zoom-wrapper"
+                  style={{
+                    transform: `scale(${zoomLevel / 100})`,
+                    transformOrigin: 'top center',
+                    transition: 'transform 150ms ease-out'
+                  }}
+                >
+                  <iframe
+                    key={`${selectedTemplate}-${zoomLevel}`}
+                    src={`${url}#toolbar=0&navpanes=0&scrollbar=1`}
+                    className="live-pdf-iframe"
+                    title="ATS Resume PDF Preview"
+                  />
+                </div>
               )
             }}
           </BlobProvider>
         </div>
       </div>
+
+      {/* Fullscreen PDF Modal View */}
+      {isFullscreen && (
+        <div className="pdf-fullscreen-overlay animate-fade-in">
+          <div className="fullscreen-header">
+            <div className="fullscreen-title-row">
+              <span className="text-sm text-bold text-inverse">{fileName}</span>
+              <span className="badge badge-info">100% ATS Safe Vector PDF</span>
+            </div>
+
+            <div className="fullscreen-actions">
+              <PDFDownloadLink
+                document={activeDoc}
+                fileName={fileName}
+                className="btn btn-primary btn-sm"
+              >
+                <Download size={14} />
+                <span>Download PDF</span>
+              </PDFDownloadLink>
+
+              <button
+                type="button"
+                className="btn-close-fullscreen"
+                onClick={() => setIsFullscreen(false)}
+              >
+                <X size={20} />
+              </button>
+            </div>
+          </div>
+
+          <div className="fullscreen-iframe-container">
+            <BlobProvider document={activeDoc}>
+              {({ url }) => (
+                <iframe
+                  src={`${url}#toolbar=0&navpanes=0&scrollbar=1`}
+                  className="fullscreen-pdf-iframe"
+                  title="Fullscreen ATS PDF Preview"
+                />
+              )}
+            </BlobProvider>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

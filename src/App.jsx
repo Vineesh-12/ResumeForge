@@ -5,6 +5,7 @@ import ApiKeyModal from './components/ApiKeyModal/ApiKeyModal'
 import AuthModal from './components/AuthModal/AuthModal'
 import DashboardModal from './components/DashboardModal/DashboardModal'
 import { useApp } from './context/AppContext'
+import Footer from './components/Footer/Footer'
 import { CheckCircle2, AlertCircle, Info, X } from 'lucide-react'
 import './App.css'
 
@@ -47,12 +48,8 @@ export default function App() {
       {/* Cloud "My Resumes" Saved Dashboard */}
       <DashboardModal />
 
-      {/* Minimal Footer */}
-      <footer className="site-footer">
-        <p className="text-xs text-muted">
-          ResumeForge • 100% Free &amp; Open Client-side ATS Optimizer • Built for students &amp; engineers
-        </p>
-      </footer>
+      {/* Global Industry-Standard SaaS Footer */}
+      <Footer />
     </div>
   )
 }

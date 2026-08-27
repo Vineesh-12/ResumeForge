@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate, useLocation, Link } from 'react-router-dom'
 import {
   FileUp,
   BarChart3,
@@ -14,7 +14,9 @@ import {
   LogOut,
   FolderOpen,
   Briefcase,
-  Layers
+  Layers,
+  Settings as SettingsIcon,
+  Sparkles
 } from 'lucide-react'
 import { useApp } from '../../context/AppContext'
 import { signOutUser } from '../../services/firebase'
@@ -22,7 +24,7 @@ import ResumeDiffModal from '../ResumeDiffModal/ResumeDiffModal'
 import './Header.css'
 
 const STEPS = [
-  { id: 1, path: '/', label: 'Upload & JD', icon: FileUp },
+  { id: 1, path: '/app', label: 'Upload & JD', icon: FileUp },
   { id: 2, path: '/analyze', label: 'Gap Analysis', icon: BarChart3 },
   { id: 3, path: '/tailor', label: 'AI Tailor', icon: Wand2 },
   { id: 4, path: '/export', label: 'Export PDF', icon: Download }
@@ -34,6 +36,7 @@ export default function Header() {
   const location = useLocation()
   const [showDiffModal, setShowDiffModal] = useState(false)
 
+  const isWizardRoute = ['/app', '/analyze', '/tailor', '/export'].includes(location.pathname)
   const currentStepObj = STEPS.find(s => s.path === location.pathname) || STEPS[0]
   const currentStep = currentStepObj.id
 
@@ -46,7 +49,7 @@ export default function Header() {
   const handleReset = () => {
     if (window.confirm('Start over with a new resume and job description?')) {
       dispatch({ type: 'RESET_ALL' })
-      navigate('/')
+      navigate('/app')
     }
   }
 
@@ -76,6 +79,7 @@ export default function Header() {
 
   const activeResume = state.tailoredResume || state.resumeParsed
   const isTrackerActive = location.pathname === '/tracker'
+  const isSettingsActive = location.pathname === '/settings'
 
   return (
     <>
@@ -95,61 +99,91 @@ export default function Header() {
             </div>
           </div>
 
-          {/* 4-Step Progress Navigation */}
-          <nav className="stepper-nav" aria-label="Progress Tracker">
-            {STEPS.map((step, idx) => {
-              const Icon = step.icon
-              const isActive = step.path === location.pathname
-              const isCompleted = state.completedSteps[step.id]
-              const isClickable = step.id === 1 || isCompleted || step.id <= currentStep
+          {/* Stepper Navigation (Active during Resume Optimization Workflow) */}
+          {isWizardRoute ? (
+            <nav className="stepper-nav" aria-label="Progress Tracker">
+              {STEPS.map((step, idx) => {
+                const Icon = step.icon
+                const isActive = step.path === location.pathname
+                const isCompleted = state.completedSteps[step.id]
+                const isClickable = step.id === 1 || isCompleted || step.id <= currentStep
 
-              return (
-                <React.Fragment key={step.id}>
-                  {idx > 0 && (
-                    <div
-                      className={`step-connector ${
-                        isCompleted || step.id <= currentStep ? 'connector-active' : ''
-                      }`}
-                    />
-                  )}
-                  <button
-                    type="button"
-                    className={`step-item ${isActive ? 'step-active' : ''} ${
-                      isCompleted ? 'step-completed' : ''
-                    } ${isClickable ? 'step-clickable' : 'step-disabled'}`}
-                    onClick={() => handleStepClick(step)}
-                    disabled={!isClickable}
-                    title={`Step ${step.id}: ${step.label}`}
-                  >
-                    <div className="step-badge">
-                      {isCompleted && !isActive ? (
-                        <Check size={14} className="step-check" />
-                      ) : (
-                        <Icon size={15} />
-                      )}
-                    </div>
-                    <span className="step-label">{step.label}</span>
-                  </button>
-                </React.Fragment>
-              )
-            })}
-          </nav>
+                return (
+                  <React.Fragment key={step.id}>
+                    {idx > 0 && (
+                      <div
+                        className={`step-connector ${
+                          isCompleted || step.id <= currentStep ? 'connector-active' : ''
+                        }`}
+                      />
+                    )}
+                    <button
+                      type="button"
+                      className={`step-item ${isActive ? 'step-active' : ''} ${
+                        isCompleted ? 'step-completed' : ''
+                      } ${isClickable ? 'step-clickable' : 'step-disabled'}`}
+                      onClick={() => handleStepClick(step)}
+                      disabled={!isClickable}
+                      title={`Step ${step.id}: ${step.label}`}
+                    >
+                      <div className="step-badge">
+                        {isCompleted && !isActive ? (
+                          <Check size={14} className="step-check" />
+                        ) : (
+                          <Icon size={15} />
+                        )}
+                      </div>
+                      <span className="step-label">{step.label}</span>
+                    </button>
+                  </React.Fragment>
+                )
+              })}
+            </nav>
+          ) : (
+            <div className="header-middle-nav">
+              <Link to="/app" className={`nav-link-item ${location.pathname === '/app' ? 'nav-active' : ''}`}>
+                <Sparkles size={15} />
+                <span>Resume Optimizer</span>
+              </Link>
+              <Link to="/tracker" className={`nav-link-item ${isTrackerActive ? 'nav-active' : ''}`}>
+                <Briefcase size={15} />
+                <span>Job Tracker</span>
+              </Link>
+              <Link to="/settings" className={`nav-link-item ${isSettingsActive ? 'nav-active' : ''}`}>
+                <SettingsIcon size={15} />
+                <span>Profile &amp; Settings</span>
+              </Link>
+            </div>
+          )}
 
           {/* Header Right Actions */}
           <div className="header-actions">
-            {/* Job Tracker Button */}
-            <button
-              type="button"
-              className={`btn-header-tracker ${isTrackerActive ? 'tracker-active' : ''}`}
-              onClick={() => navigate('/tracker')}
-              title="Open Kanban Job Application Tracker"
-            >
-              <Briefcase size={14} />
-              <span className="header-btn-text">Job Tracker</span>
-            </button>
+            {/* If on landing/settings, show direct CTA */}
+            {!isWizardRoute && (
+              <button
+                type="button"
+                className="btn btn-primary btn-sm header-cta-pill"
+                onClick={() => navigate('/app')}
+              >
+                <span>Optimize Resume</span>
+              </button>
+            )}
+
+            {/* Job Tracker Button (when inside wizard) */}
+            {isWizardRoute && (
+              <button
+                type="button"
+                className={`btn-header-tracker ${isTrackerActive ? 'tracker-active' : ''}`}
+                onClick={() => navigate('/tracker')}
+                title="Open Kanban Job Application Tracker"
+              >
+                <Briefcase size={14} />
+                <span className="header-btn-text">Job Tracker</span>
+              </button>
+            )}
 
             {/* Score Diff Comparison Button */}
-            {state.tailoredResume && (
+            {state.tailoredResume && isWizardRoute && (
               <button
                 type="button"
                 className="btn-header-diff"
@@ -187,10 +221,25 @@ export default function Header() {
               </button>
             )}
 
+            {/* Settings Quick Icon */}
+            <button
+              type="button"
+              className={`btn-header-settings ${isSettingsActive ? 'settings-active' : ''}`}
+              onClick={() => navigate('/settings')}
+              title="Account & Profile Settings"
+            >
+              <SettingsIcon size={15} />
+            </button>
+
             {/* User Auth Chip */}
             {state.currentUser ? (
               <div className="user-profile-menu">
-                <div className="user-chip" title={state.currentUser.email}>
+                <div
+                  className="user-chip"
+                  onClick={() => navigate('/settings')}
+                  title={`Logged in as ${state.currentUser.email} (Click to open Settings)`}
+                  style={{ cursor: 'pointer' }}
+                >
                   <div className="user-avatar-mini">
                     {state.currentUser.displayName ? (
                       state.currentUser.displayName.charAt(0).toUpperCase()
@@ -237,7 +286,7 @@ export default function Header() {
             </button>
 
             {/* Reset / New Resume Button */}
-            {(state.resumeFile || state.jobDescription) && (
+            {(state.resumeFile || state.jobDescription) && isWizardRoute && (
               <button
                 type="button"
                 className="btn btn-ghost btn-sm btn-header-reset"

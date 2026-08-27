@@ -405,6 +405,62 @@
   border-radius: var(--radius-full);
 }
 
+/* Middle Nav Links (Landing / App Switcher) */
+.header-middle-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.nav-link-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.35rem 0.8rem;
+  font-size: 0.825rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  border-radius: var(--radius-full);
+  text-decoration: none;
+  transition: all var(--transition-fast);
+}
+
+.nav-link-item:hover {
+  color: var(--text-primary);
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.nav-link-item.nav-active {
+  color: var(--accent-primary);
+  background: #ECFDF5;
+}
+
+.header-cta-pill {
+  font-size: 0.8rem;
+  padding: 0.4rem 0.9rem;
+}
+
+.btn-header-settings {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.45rem;
+  background: #FFFFFF;
+  border: 1px solid var(--glass-border);
+  color: var(--text-secondary);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  box-shadow: var(--shadow-xs);
+  transition: all var(--transition-fast);
+}
+
+.btn-header-settings:hover,
+.btn-header-settings.settings-active {
+  background: #ECFDF5;
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
 /* Responsive adjustments */
 @media (max-width: 1024px) {
   .header-btn-text {
@@ -422,6 +478,10 @@
   }
   
   .brand-sub {
+    display: none;
+  }
+
+  .header-middle-nav {
     display: none;
   }
 }
