@@ -110,14 +110,11 @@ export default function Header() {
           {/* FAR LEFT: Brand Logo */}
           <div className="brand-section" onClick={() => navigate('/')}>
             <div className="brand-icon">
-              <ShieldCheck size={22} className="brand-svg" />
+              <ShieldCheck size={20} className="brand-svg" />
             </div>
-            <div className="brand-text">
-              <div className="brand-title">
-                <span className="text-gradient">ResumeForge</span>
-                <span className="badge-free">100% FREE</span>
-              </div>
-              <span className="brand-sub">Harvard-Jake ATS Engine</span>
+            <div className="brand-title">
+              <span className="brand-name">ResumeForge</span>
+              <span className="badge-free">100% FREE</span>
             </div>
           </div>
 
