@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
-import { KeyRound, ShieldCheck, ExternalLink, X, Eye, EyeOff, Check, AlertCircle } from 'lucide-react'
+import { KeyRound, ShieldCheck, ExternalLink, X, Eye, EyeOff, Check, AlertCircle, RefreshCw, Sparkles } from 'lucide-react'
 import { useApp } from '../../context/AppContext'
+import { testGeminiApiKey } from '../../services/geminiService'
 import './ApiKeyModal.css'
 
 export default function ApiKeyModal() {
@@ -8,6 +9,8 @@ export default function ApiKeyModal() {
   const [inputValue, setInputValue] = useState('')
   const [showKey, setShowKey] = useState(false)
   const [validationError, setValidationError] = useState('')
+  const [testStatus, setTestStatus] = useState(null) // { success: boolean, message: string } | null
+  const [isTesting, setIsTesting] = useState(false)
 
   useEffect(() => {
     if (state.apiKey) {
@@ -16,6 +19,33 @@ export default function ApiKeyModal() {
   }, [state.apiKey, state.showApiKeyModal])
 
   if (!state.showApiKeyModal) return null
+
+  const handleTest = async () => {
+    const trimmed = inputValue.trim()
+    if (!trimmed) {
+      setValidationError('Please enter a Google Gemini API key to test.')
+      return
+    }
+
+    setValidationError('')
+    setIsTesting(true)
+    setTestStatus(null)
+
+    try {
+      const result = await testGeminiApiKey(trimmed)
+      setTestStatus({
+        success: true,
+        message: `✅ ${result.message}`
+      })
+    } catch (err) {
+      setTestStatus({
+        success: false,
+        message: err.message || 'Connection failed. Please verify the API key.'
+      })
+    } finally {
+      setIsTesting(false)
+    }
+  }
 
   const handleSave = (e) => {
     e?.preventDefault()
@@ -27,10 +57,19 @@ export default function ApiKeyModal() {
 
     setValidationError('')
     dispatch({ type: 'SET_API_KEY', payload: trimmed })
+    dispatch({
+      type: 'SET_TOAST',
+      payload: {
+        message: 'Google Gemini API Key connected successfully!',
+        type: 'success'
+      }
+    })
+    handleClose()
   }
 
   const handleClear = () => {
     setInputValue('')
+    setTestStatus(null)
     dispatch({ type: 'SET_API_KEY', payload: null })
   }
 
@@ -48,8 +87,8 @@ export default function ApiKeyModal() {
               <KeyRound size={20} />
             </div>
             <div>
-              <h3>Gemini API Configuration</h3>
-              <p className="text-sm text-muted">Free AI Engine for Resume Tailoring</p>
+              <h3>Google Gemini API Key</h3>
+              <p className="text-sm text-muted">Powered by Gemini 2.0 Flash • 100% In-Browser Privacy</p>
             </div>
           </div>
           <button type="button" className="btn-close" onClick={handleClose} aria-label="Close">
@@ -61,21 +100,21 @@ export default function ApiKeyModal() {
         <div className="modal-info-box">
           <ShieldCheck size={18} className="info-icon" />
           <div className="info-text">
-            <strong>100% Free &amp; Private:</strong> Your API key and resume content stay strictly inside your browser's local storage and are never transmitted to third-party databases.
+            <strong>Client-Side Only:</strong> Your Google Gemini API Key is stored only in your local browser storage. It is never logged or saved to any external database.
           </div>
         </div>
 
         {/* Input Form */}
         <form onSubmit={handleSave} className="modal-form">
           <label className="form-label">
-            <span>Google Gemini API Key</span>
+            <span>Enter Google Gemini API Key</span>
             <a
               href="https://aistudio.google.com/app/apikey"
               target="_blank"
               rel="noopener noreferrer"
               className="link-external"
             >
-              Get Free Key <ExternalLink size={12} />
+              Get Free Key from Google AI Studio <ExternalLink size={12} />
             </a>
           </label>
 
@@ -83,11 +122,12 @@ export default function ApiKeyModal() {
             <input
               type={showKey ? 'text' : 'password'}
               className={`input-control ${validationError ? 'input-error' : ''}`}
-              placeholder="Paste your Gemini API key (e.g. AIzaSy... or AQ...)"
+              placeholder="AIzaSy..."
               value={inputValue}
               onChange={(e) => {
                 setInputValue(e.target.value)
                 if (validationError) setValidationError('')
+                if (testStatus) setTestStatus(null)
               }}
               autoFocus
             />
@@ -101,10 +141,29 @@ export default function ApiKeyModal() {
             </button>
           </div>
 
+          <p className="text-xs text-muted" style={{ marginTop: '4px', marginBottom: '8px' }}>
+            ✨ Access high-speed, deep-precision resume analysis and tailoring via Google Gemini 2.0 Flash.
+          </p>
+
           {validationError && (
             <div className="error-message">
               <AlertCircle size={14} />
               <span>{validationError}</span>
+            </div>
+          )}
+
+          {testStatus && (
+            <div className={`test-status-box ${testStatus.success ? 'success' : 'error'}`} style={{
+              padding: '10px 14px',
+              borderRadius: '8px',
+              fontSize: '0.85rem',
+              marginTop: '8px',
+              marginBottom: '10px',
+              background: testStatus.success ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.08)',
+              border: `1px solid ${testStatus.success ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.25)'}`,
+              color: testStatus.success ? '#065f46' : '#991b1b'
+            }}>
+              {testStatus.message}
             </div>
           )}
 
@@ -119,17 +178,36 @@ export default function ApiKeyModal() {
           </div>
 
           {/* Actions */}
-          <div className="modal-actions">
-            {state.apiKey && (
-              <button
-                type="button"
-                className="btn btn-ghost btn-sm"
-                onClick={handleClear}
-              >
-                Clear Key
-              </button>
-            )}
-            <div style={{ marginLeft: 'auto', display: 'flex', gap: 'var(--space-2)' }}>
+          <div className="modal-actions" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px' }}>
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              onClick={handleTest}
+              disabled={isTesting || !inputValue.trim()}
+            >
+              {isTesting ? (
+                <>
+                  <RefreshCw size={14} className="animate-spin" />
+                  Testing...
+                </>
+              ) : (
+                <>
+                  <RefreshCw size={14} />
+                  Test Connection
+                </>
+              )}
+            </button>
+
+            <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+              {state.apiKey && (
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-sm"
+                  onClick={handleClear}
+                >
+                  Clear Key
+                </button>
+              )}
               <button
                 type="button"
                 className="btn btn-secondary"
@@ -142,7 +220,7 @@ export default function ApiKeyModal() {
                 className="btn btn-primary"
               >
                 <Check size={16} />
-                Save &amp; Connect
+                Save Key
               </button>
             </div>
           </div>

@@ -5,9 +5,9 @@
  */
 
 const GEMINI_MODELS = [
-  'gemini-3.6-flash',
-  'gemini-3.5-flash',
-  'gemini-3.1-flash-lite'
+  'gemini-2.0-flash',
+  'gemini-1.5-flash',
+  'gemini-1.5-pro'
 ]
 
 /**
@@ -47,10 +47,82 @@ export function safeParseJSON(text) {
     const lastBrace = cleaned.lastIndexOf('}')
     if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
       const jsonCandidate = cleaned.substring(firstBrace, lastBrace + 1)
-      return JSON.parse(jsonCandidate)
+      try {
+        return JSON.parse(jsonCandidate)
+      } catch (innerErr) {
+        // continue
+      }
+    }
+    const firstBracket = cleaned.indexOf('[')
+    const lastBracket = cleaned.lastIndexOf(']')
+    if (firstBracket !== -1 && lastBracket !== -1 && lastBracket > firstBracket) {
+      const arrayCandidate = cleaned.substring(firstBracket, lastBracket + 1)
+      try {
+        return JSON.parse(arrayCandidate)
+      } catch (innerErr) {
+        // continue
+      }
     }
     throw new Error(`Failed to parse AI output as JSON: ${err.message}`)
   }
+}
+
+/**
+ * Tests connection to Google Gemini with the provided API Key.
+ * @param {string} apiKey 
+ * @returns {Promise<{ success: boolean, model: string, message: string }>}
+ */
+export async function testGeminiApiKey(apiKey) {
+  const cleanKey = (apiKey || '').trim()
+  if (!cleanKey) {
+    throw new Error('Please enter a Google Gemini API key first.')
+  }
+
+  let lastError = null
+
+  for (const model of GEMINI_MODELS) {
+    try {
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(cleanKey)}`
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 10000)
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ role: 'user', parts: [{ text: 'Respond with "OK"' }] }],
+          generationConfig: { maxOutputTokens: 10 }
+        }),
+        signal: controller.signal
+      })
+
+      clearTimeout(timeoutId)
+
+      if (response.ok) {
+        return { success: true, model, message: `Connected successfully using Google ${model}!` }
+      }
+
+      const errBody = await response.json().catch(() => ({}))
+      const errorMsg = errBody?.error?.message || response.statusText
+
+      if (response.status === 400 && (errorMsg?.includes('API_KEY_INVALID') || errorMsg?.includes('API key not valid'))) {
+        throw new Error('Invalid Gemini API Key. Please verify your key from Google AI Studio.')
+      }
+
+      if (response.status === 403) {
+        throw new Error('API Key access forbidden. Please check your Google AI Studio project.')
+      }
+
+      lastError = new Error(`Google Gemini error (${response.status}): ${errorMsg}`)
+    } catch (err) {
+      if (err.message && (err.message.includes('Invalid') || err.message.includes('forbidden'))) {
+        throw err
+      }
+      lastError = err
+    }
+  }
+
+  throw lastError || new Error('Connection failed. Please check your API key and network connection.')
 }
 
 /**
@@ -68,13 +140,19 @@ export async function callGeminiStructured({
   prompt,
   systemInstruction = 'You are an expert ATS (Applicant Tracking System) optimization specialist and technical recruiter. Output strictly valid JSON.',
   temperature = 0.2,
-  maxRetries = 2
+  maxRetries = 1
 }) {
-  if (!apiKey || !apiKey.trim()) {
+  const cleanKey = (
+    apiKey ||
+    (typeof localStorage !== 'undefined' && localStorage.getItem('resumeforge_gemini_api_key')) ||
+    (typeof import.meta !== 'undefined' && import.meta.env?.VITE_GEMINI_API_KEY) ||
+    ''
+  ).trim()
+
+  if (!cleanKey) {
     throw new Error('Gemini API key is required. Please set your API key in the configuration modal.')
   }
 
-  const cleanKey = apiKey.trim()
   let lastError = null
 
   // Try each model in preference order
@@ -96,37 +174,43 @@ export async function callGeminiStructured({
               }
             : undefined,
           generationConfig: {
-            temperature,
-            responseMimeType: 'application/json'
+            temperature: Math.min(1.0, Math.max(0.0, temperature)),
+            responseMimeType: 'application/json',
+            maxOutputTokens: 8192
           }
         }
+
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 20000)
 
         const response = await fetch(endpoint, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify(payload)
+          body: JSON.stringify(payload),
+          signal: controller.signal
         })
 
+        clearTimeout(timeoutId)
+
         if (!response.ok) {
-          const errorBody = await response.json().catch(() => ({}))
-          const errorMessage = errorBody?.error?.message || `HTTP ${response.status} ${response.statusText}`
+          const errorData = await response.json().catch(() => ({}))
+          const errorMessage = errorData?.error?.message || response.statusText
 
-          // Handle Rate Limiting (429) -> Wait with backoff and retry
-          if (response.status === 429 && attempt < maxRetries) {
-            const backoffMs = Math.pow(2, attempt) * 1500
-            console.warn(`[Gemini API] Rate limit encountered (429). Retrying in ${backoffMs}ms...`)
-            await sleep(backoffMs)
-            continue
+          if (response.status === 400 && (errorMessage?.includes('API_KEY_INVALID') || errorMessage?.includes('API key not valid'))) {
+            throw new Error('Authentication Failed: Invalid Google Gemini API Key. Please verify in Google AI Studio.')
           }
 
-          // Handle Invalid Key (400/403)
-          if (response.status === 400 || response.status === 403) {
-            throw new Error(`Gemini API Key Authentication Failed: ${errorMessage}. Please check your API key.`)
+          if (response.status === 429) {
+            console.warn(`[Gemini API] Rate limit on ${model} (attempt ${attempt + 1}). Backing off...`)
+            if (attempt < maxRetries) {
+              await sleep(1500 * (attempt + 1))
+              continue
+            }
+            break // Switch to next model
           }
 
-          // Model not found or deprecated -> move to next model
           if (response.status === 404) {
             console.warn(`[Gemini API] Model ${model} not available. Trying fallback model...`)
             break // Break retry loop to try next model
@@ -138,7 +222,6 @@ export async function callGeminiStructured({
         const data = await response.json()
         const parts = data?.candidates?.[0]?.content?.parts || []
         
-        // Find the text part (ignoring thoughts if separate)
         let candidateText = ''
         for (let i = parts.length - 1; i >= 0; i--) {
           if (parts[i].text && !parts[i].thought) {
@@ -158,8 +241,7 @@ export async function callGeminiStructured({
         return safeParseJSON(candidateText)
       } catch (err) {
         lastError = err
-        // If authentication error, don't keep retrying across models
-        if (err.message && err.message.includes('Authentication Failed')) {
+        if (err.message && (err.message.includes('Authentication Failed') || err.message.includes('Invalid Google Gemini API Key'))) {
           throw err
         }
         if (attempt < maxRetries) {
