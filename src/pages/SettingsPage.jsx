@@ -34,11 +34,11 @@ import {
   getUserResumes,
   updateUserProfileName,
   updateUserAccountPassword,
-  sendPasswordReset,
   checkUsernameAvailability,
   claimUsername,
   deleteUserAccountAndCloudData
 } from '../services/firebase'
+import { sendOtpEmail } from '../services/emailService'
 import CountryCodeSelect, { COUNTRIES } from '../components/CountryCodeSelect/CountryCodeSelect'
 import './SettingsPage.css'
 
@@ -90,12 +90,24 @@ export default function SettingsPage() {
     message: ''
   })
 
-  // Security / Password State
+  // Direct Password Form State
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false)
-  const [isSendingResetEmail, setIsSendingResetEmail] = useState(false)
+
+  // Password Reset with Email OTP Modal State (Zero Redirect Links)
+  const [showPwdModal, setShowPwdModal] = useState(false)
+  const [pwdStep, setPwdStep] = useState(1) // 1: Send OTP, 2: Enter OTP + New Password
+  const [pwdGeneratedOtp, setPwdGeneratedOtp] = useState('')
+  const [pwdEnteredOtp, setPwdEnteredOtp] = useState('')
+  const [modalNewPwd, setModalNewPwd] = useState('')
+  const [modalConfirmPwd, setModalConfirmPwd] = useState('')
+  const [modalShowPwd, setModalShowPwd] = useState(false)
+  const [pwdOtpError, setPwdOtpError] = useState('')
+  const [pwdResendCountdown, setPwdResendCountdown] = useState(0)
+  const [isSendingPwdOtp, setIsSendingPwdOtp] = useState(false)
+  const [isResettingPwd, setIsResettingPwd] = useState(false)
 
   // Account Deletion & OTP State
   const [showDeleteModal, setShowDeleteModal] = useState(false)
@@ -117,7 +129,7 @@ export default function SettingsPage() {
   const [apiKeyInput, setApiKeyInput] = useState('')
   const [showApiKey, setShowApiKey] = useState(false)
 
-  // Resend OTP Countdown Timer
+  // Resend OTP Countdown Timers
   useEffect(() => {
     let timer
     if (resendCountdown > 0) {
@@ -125,6 +137,14 @@ export default function SettingsPage() {
     }
     return () => clearTimeout(timer)
   }, [resendCountdown])
+
+  useEffect(() => {
+    let timer
+    if (pwdResendCountdown > 0) {
+      timer = setTimeout(() => setPwdResendCountdown(pwdResendCountdown - 1), 1000)
+    }
+    return () => clearTimeout(timer)
+  }, [pwdResendCountdown])
 
   // Parse phone number into country code + local number
   const extractPhoneAndCode = (rawPhone) => {
@@ -317,7 +337,7 @@ export default function SettingsPage() {
       if (err.code === 'auth/requires-recent-login') {
         dispatch({
           type: 'SET_ERROR',
-          payload: 'Security check: Please log in again before changing your password, or use the email reset link below.'
+          payload: 'Security check: Please log in again before changing your password, or use the email verification code below.'
         })
       } else {
         dispatch({ type: 'SET_ERROR', payload: err.message || 'Failed to update password.' })
@@ -327,29 +347,82 @@ export default function SettingsPage() {
     }
   }
 
-  // Handle Send Password Reset / Security OTP Link
-  const handleSendResetEmail = async () => {
+  // Handle Password Reset Flow (Zero Redirect Links, Code Verified In-App)
+  const handleOpenPwdModal = () => {
+    setPwdStep(1)
+    setPwdEnteredOtp('')
+    setModalNewPwd('')
+    setModalConfirmPwd('')
+    setPwdOtpError('')
+    setShowPwdModal(true)
+  }
+
+  const handleSendPwdOtp = async () => {
     const targetEmail = profile.email || state.currentUser?.email
     if (!targetEmail) {
-      dispatch({ type: 'SET_ERROR', payload: 'Please enter a valid email address first.' })
+      dispatch({ type: 'SET_ERROR', payload: 'Please enter your registered email address first.' })
       return
     }
 
-    setIsSendingResetEmail(true)
+    setIsSendingPwdOtp(true)
+    const code = Math.floor(100000 + Math.random() * 900000).toString()
+    setPwdGeneratedOtp(code)
+    setPwdStep(2)
+    setPwdOtpError('')
+    setPwdResendCountdown(45)
+
     try {
-      await sendPasswordReset(targetEmail)
+      // Dispatches professional, category-specific email without redirect links
+      await sendOtpEmail(targetEmail, code, 'PASSWORD_RESET')
       dispatch({
         type: 'SET_TOAST',
         payload: {
-          message: `Security password reset link sent to ${targetEmail}. Check your inbox!`,
+          message: `Password reset verification code sent to ${targetEmail}. Check your inbox.`,
           type: 'success'
         }
       })
     } catch (err) {
-      console.error('Reset email error:', err)
-      dispatch({ type: 'SET_ERROR', payload: err.message || 'Failed to send password reset email.' })
+      console.error('Error sending reset OTP:', err)
     } finally {
-      setIsSendingResetEmail(false)
+      setIsSendingPwdOtp(false)
+    }
+  }
+
+  const handleConfirmPwdResetWithOtp = async (e) => {
+    e.preventDefault()
+    if (!pwdEnteredOtp || pwdEnteredOtp.trim().length !== 6) {
+      setPwdOtpError('Please enter the 6-digit code sent to your email.')
+      return
+    }
+    if (pwdEnteredOtp.trim() !== pwdGeneratedOtp.trim()) {
+      setPwdOtpError('Invalid 6-digit code. Please verify the code sent to your email.')
+      return
+    }
+    if (!modalNewPwd || modalNewPwd.length < 6) {
+      setPwdOtpError('New password must be at least 6 characters long.')
+      return
+    }
+    if (modalNewPwd !== modalConfirmPwd) {
+      setPwdOtpError('New password and confirmation do not match.')
+      return
+    }
+
+    setIsResettingPwd(true)
+    try {
+      await updateUserAccountPassword(modalNewPwd)
+      setShowPwdModal(false)
+      dispatch({
+        type: 'SET_TOAST',
+        payload: {
+          message: 'Password successfully updated! You can now use your new password.',
+          type: 'success'
+        }
+      })
+    } catch (err) {
+      console.error('Failed to reset password:', err)
+      setPwdOtpError(err.message || 'Failed to update password.')
+    } finally {
+      setIsResettingPwd(false)
     }
   }
 
@@ -370,28 +443,25 @@ export default function SettingsPage() {
       return
     }
 
-    // Generate secure 6-digit random code
     const code = Math.floor(100000 + Math.random() * 900000).toString()
     setGeneratedOtp(code)
     setDeleteStep(2)
     setOtpError('')
     setResendCountdown(45)
 
-    // Trigger Firebase security email dispatch
     try {
-      await sendPasswordReset(targetEmail)
+      // Dispatches category-aligned deletion authorization email with 6-digit code
+      await sendOtpEmail(targetEmail, code, 'DELETE_ACCOUNT')
+      dispatch({
+        type: 'SET_TOAST',
+        payload: {
+          message: `Security verification OTP sent to ${targetEmail}. Check your inbox.`,
+          type: 'success'
+        }
+      })
     } catch (emailErr) {
       console.warn('Security email dispatch notice:', emailErr)
     }
-
-    // Secure notification without exposing OTP in UI
-    dispatch({
-      type: 'SET_TOAST',
-      payload: {
-        message: `Security verification OTP sent to ${targetEmail}. Check your inbox or spam folder.`,
-        type: 'success'
-      }
-    })
   }
 
   // Confirm Account Deletion with OTP
@@ -664,7 +734,7 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          {/* Card 4 (Moved to bottom of Professional Links horizontally): Resume Engine Preferences */}
+          {/* Card 4: Resume Engine Preferences (Horizontal) */}
           <div className="glass-card settings-card">
             <div className="settings-card-header">
               <div className="card-icon-pill">
@@ -716,7 +786,7 @@ export default function SettingsPage() {
               </div>
               <div>
                 <h3>Account Security &amp; Password</h3>
-                <p className="text-xs text-muted">Change password or send security reset link to email.</p>
+                <p className="text-xs text-muted">Update password or receive in-app email verification code.</p>
               </div>
             </div>
 
@@ -729,22 +799,21 @@ export default function SettingsPage() {
                 </span>
               </div>
 
-              {/* Send Reset / OTP Link to Email */}
+              {/* In-App Email Password Reset Code Modal Trigger */}
               <div className="security-action-box">
                 <div>
-                  <h4 className="text-sm font-bold">Email Password Reset Link</h4>
+                  <h4 className="text-sm font-bold">Reset Password via Email Code</h4>
                   <p className="text-xs text-muted">
-                    Receive a secure verification link to your email to reset or create an account password.
+                    Receive a 6-digit verification code to your email to set a new password on this website directly. No redirect links required.
                   </p>
                 </div>
                 <button
                   type="button"
-                  disabled={isSendingResetEmail}
                   className="btn btn-secondary btn-sm"
-                  onClick={handleSendResetEmail}
+                  onClick={handleOpenPwdModal}
                 >
-                  <Mail size={14} />
-                  <span>{isSendingResetEmail ? 'Sending...' : 'Send Reset Link'}</span>
+                  <KeyRound size={14} />
+                  <span>Email Password Reset Code</span>
                 </button>
               </div>
 
@@ -880,6 +949,164 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
+
+      {/* In-App Password Reset Modal with Email OTP Verification (No Redirect Links) */}
+      {showPwdModal && (
+        <div className="modal-overlay">
+          <div className="modal-content animate-fade-in delete-account-dialog">
+            <div className="modal-header">
+              <div className="modal-title-group">
+                <div className="modal-icon" style={{ background: '#ECFDF5', borderColor: '#A7F3D0', color: '#059669' }}>
+                  <KeyRound size={20} />
+                </div>
+                <div>
+                  <h3>Reset Password via Email OTP</h3>
+                  <span className="text-xs text-muted">Step {pwdStep} of 2: Code Verification</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                className="btn-modal-close"
+                onClick={() => setShowPwdModal(false)}
+              >
+                ✕
+              </button>
+            </div>
+
+            {pwdStep === 1 ? (
+              <div className="delete-step-container">
+                <div className="otp-request-box">
+                  <div className="otp-request-info">
+                    <Mail size={18} className="text-emerald" />
+                    <div>
+                      <h4 className="text-sm font-bold">Receive 6-Digit Password Code</h4>
+                      <p className="text-xs text-muted">
+                        We will send a 6-digit security code directly to your email:
+                      </p>
+                      <span className="text-xs font-mono font-bold text-emerald">
+                        {profile.email || state.currentUser?.email || 'your email address'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    disabled={isSendingPwdOtp}
+                    className="btn btn-primary btn-send-otp"
+                    onClick={handleSendPwdOtp}
+                  >
+                    <Send size={15} />
+                    <span>{isSendingPwdOtp ? 'Sending Code...' : 'Send 6-Digit Code to Email'}</span>
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={handleConfirmPwdResetWithOtp} className="delete-step-container">
+                <div className="otp-entry-box">
+                  <div className="otp-header-pill">
+                    <KeyRound size={16} className="text-emerald" />
+                    <span className="text-xs font-bold">6-Digit Code Dispatched</span>
+                  </div>
+
+                  <p className="text-xs text-secondary text-center">
+                    Check your email (<strong>{profile.email || state.currentUser?.email}</strong>) and enter the 6-digit code below:
+                  </p>
+
+                  <div className="otp-input-center">
+                    <input
+                      type="text"
+                      maxLength={6}
+                      autoFocus
+                      placeholder="• • • • • •"
+                      className="input-control otp-code-field"
+                      value={pwdEnteredOtp}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/[^0-9]/g, '')
+                        setPwdEnteredOtp(val)
+                        if (pwdOtpError) setPwdOtpError('')
+                      }}
+                    />
+                  </div>
+
+                  {/* New Password Inputs */}
+                  <div className="form-group" style={{ width: '100%', marginTop: 'var(--space-2)' }}>
+                    <label>New Password</label>
+                    <div className="input-password-wrapper">
+                      <input
+                        type={modalShowPwd ? 'text' : 'password'}
+                        className="input-control"
+                        placeholder="Min 6 characters"
+                        value={modalNewPwd}
+                        onChange={(e) => setModalNewPwd(e.target.value)}
+                      />
+                      <button
+                        type="button"
+                        className="btn-toggle-eye"
+                        onClick={() => setModalShowPwd(!modalShowPwd)}
+                      >
+                        {modalShowPwd ? <EyeOff size={15} /> : <Eye size={15} />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="form-group" style={{ width: '100%' }}>
+                    <label>Confirm New Password</label>
+                    <input
+                      type={modalShowPwd ? 'text' : 'password'}
+                      className="input-control"
+                      placeholder="Re-enter new password"
+                      value={modalConfirmPwd}
+                      onChange={(e) => setModalConfirmPwd(e.target.value)}
+                    />
+                  </div>
+
+                  {pwdOtpError && (
+                    <div className="otp-error-banner animate-fade-in">
+                      <AlertTriangle size={14} />
+                      <span>{pwdOtpError}</span>
+                    </div>
+                  )}
+
+                  <div className="otp-resend-row">
+                    {pwdResendCountdown > 0 ? (
+                      <span className="text-xs text-muted">
+                        Resend code in <strong>{pwdResendCountdown}s</strong>
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        className="btn-resend-link"
+                        onClick={handleSendPwdOtp}
+                      >
+                        <RefreshCw size={13} />
+                        <span>Resend Code</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                <div className="modal-actions" style={{ justifyContent: 'space-between', marginTop: 'var(--space-4)' }}>
+                  <button
+                    type="button"
+                    className="btn btn-secondary btn-sm"
+                    onClick={() => setPwdStep(1)}
+                  >
+                    Back
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isResettingPwd || pwdEnteredOtp.length !== 6 || !modalNewPwd}
+                    className="btn btn-primary"
+                  >
+                    <Check size={15} />
+                    <span>{isResettingPwd ? 'Updating...' : 'Confirm & Update Password'}</span>
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Account Deletion Dialog Box with Email OTP Verification */}
       {showDeleteModal && (
