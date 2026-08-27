@@ -216,23 +216,9 @@ export default function ResumeUpload() {
               or <span className="text-highlight">click to browse</span> from your files
             </p>
 
-            <div className="dropzone-pills">
-              <span className="pill"><Shield size={12} /> Client-Side Only</span>
+            <div className="dropzone-pills" style={{ justifyContent: 'center' }}>
               <span className="pill"><Zap size={12} /> Max 5MB PDF</span>
             </div>
-          </div>
-
-          {/* Quick Sample Resume Loader */}
-          <div className="sample-resume-trigger">
-            <span className="text-xs text-muted">Don&apos;t have a PDF right now?</span>
-            <button
-              type="button"
-              className="btn btn-sm btn-ghost btn-sample"
-              onClick={handleLoadSample}
-            >
-              <Sparkles size={13} className="text-cyan" />
-              <span>Load Sample Tech Resume</span>
-            </button>
           </div>
         </div>
       )}

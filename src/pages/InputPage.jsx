@@ -224,7 +224,7 @@ export default function InputPage() {
             </div>
             <div>
               <h3>1. Upload Your Resume</h3>
-              <p className="text-sm text-muted">PDF format • Max 5MB • 100% In-Browser</p>
+              <p className="text-sm text-muted">PDF format • Max 5MB</p>
             </div>
             {hasResume && (
               <span className="badge badge-success" style={{ marginLeft: 'auto' }}>

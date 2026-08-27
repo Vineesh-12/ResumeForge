@@ -105,6 +105,9 @@ export default function ResumeChat({ currentResume, onResumeUpdated }) {
 
     setMessages(prev => [...prev, userMsgObj])
     setInputMessage('')
+    if (textareaRef.current) {
+      textareaRef.current.style.height = '42px'
+    }
     setIsSending(true)
 
     try {
@@ -320,9 +323,16 @@ export default function ResumeChat({ currentResume, onResumeUpdated }) {
           className="chat-textarea"
           placeholder="Ask a question or request a change (e.g. 'Add GraphQL to skills')..."
           value={inputMessage}
-          onChange={(e) => setInputMessage(e.target.value)}
+          onChange={(e) => {
+            setInputMessage(e.target.value)
+            if (textareaRef.current) {
+              textareaRef.current.style.height = 'auto'
+              const newH = Math.min(textareaRef.current.scrollHeight, 200)
+              textareaRef.current.style.height = `${Math.max(42, newH)}px`
+            }
+          }}
           onKeyDown={handleKeyDown}
-          rows={2}
+          rows={1}
           disabled={isSending}
         />
         <button
