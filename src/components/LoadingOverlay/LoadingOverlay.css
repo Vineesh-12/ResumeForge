@@ -1,9 +1,9 @@
 .loading-overlay-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(7, 9, 14, 0.88);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -14,15 +14,15 @@
 .loading-modal-card {
   width: 100%;
   max-width: 480px;
-  background: var(--bg-secondary);
-  border: 1px solid var(--glass-border-hover);
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
   border-radius: var(--radius-xl);
   padding: var(--space-8) var(--space-6);
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  box-shadow: var(--shadow-lg), var(--shadow-glow-purple);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.08);
   gap: var(--space-3);
 }
 
@@ -40,8 +40,8 @@
   position: absolute;
   inset: -6px;
   border-radius: var(--radius-full);
-  background: var(--accent-gradient-primary);
-  opacity: 0.4;
+  background: #059669;
+  opacity: 0.25;
   filter: blur(12px);
 }
 
@@ -50,31 +50,36 @@
   width: 64px;
   height: 64px;
   border-radius: var(--radius-full);
-  background: var(--bg-tertiary);
-  border: 1px solid rgba(37, 99, 235, 0.35);
+  background: #ECFDF5;
+  border: 1px solid #A7F3D0;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #93C5FD;
-  box-shadow: 0 0 20px var(--accent-primary-glow);
+  color: #059669;
+  box-shadow: 0 2px 12px rgba(5, 150, 105, 0.2);
 }
 
 .loading-title {
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: var(--text-primary);
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #0F172A;
+  margin: 0;
 }
 
 .loading-message {
   max-width: 380px;
-  line-height: 1.4;
+  line-height: 1.45;
+  color: #475569;
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin: 0;
 }
 
 /* Progress bar track */
 .loading-progress-container {
   width: 100%;
   height: 6px;
-  background: var(--bg-tertiary);
+  background: #F1F5F9;
   border-radius: var(--radius-full);
   overflow: hidden;
   margin: var(--space-2) 0 var(--space-3) 0;
@@ -82,10 +87,10 @@
 
 .loading-progress-bar {
   height: 100%;
-  background: var(--accent-gradient-primary);
+  background: linear-gradient(90deg, #059669 0%, #10B981 100%);
   border-radius: var(--radius-full);
   transition: width var(--transition-normal);
-  box-shadow: 0 0 10px var(--accent-primary-glow);
+  box-shadow: 0 0 10px rgba(5, 150, 105, 0.3);
 }
 
 /* Steps list */
@@ -95,23 +100,24 @@
   flex-direction: column;
   gap: var(--space-2);
   text-align: left;
-  background: rgba(7, 9, 14, 0.6);
+  background: #F8FAFC;
   padding: var(--space-4);
   border-radius: var(--radius-lg);
-  border: 1px solid var(--glass-border);
+  border: 1px solid #E2E8F0;
 }
 
 .step-row {
   display: flex;
   align-items: flex-start;
   gap: var(--space-3);
-  padding: var(--space-2) var(--space-1);
-  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.65rem;
+  border-radius: var(--radius-md);
   transition: all var(--transition-fast);
 }
 
 .step-row.step-current {
-  background: rgba(37, 99, 235, 0.08);
+  background: #ECFDF5;
+  border: 1px solid #A7F3D0;
 }
 
 .step-status-icon {
@@ -128,27 +134,34 @@
   width: 8px;
   height: 8px;
   border-radius: var(--radius-full);
-  background: var(--text-muted);
-  opacity: 0.4;
+  background: #94A3B8;
+  opacity: 0.6;
 }
 
 .step-text-wrap {
   display: flex;
   flex-direction: column;
+  gap: 2px;
 }
 
 .step-row-title {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--text-primary);
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #0F172A;
 }
 
 .step-row.step-finished .step-row-title {
-  color: var(--text-secondary);
+  color: #065F46;
 }
 
 .step-row-desc {
-  color: var(--text-muted);
+  font-size: 0.775rem;
+  font-weight: 500;
+  color: #64748B;
+}
+
+.step-row.step-finished .step-row-desc {
+  color: #047857;
 }
 
 .loading-privacy-pill {
@@ -156,10 +169,10 @@
   align-items: center;
   gap: var(--space-2);
   font-size: 0.75rem;
-  color: var(--text-muted);
-  background: rgba(16, 185, 129, 0.08);
-  border: 1px solid rgba(16, 185, 129, 0.2);
-  padding: 0.25rem 0.75rem;
+  font-weight: 600;
+  color: #065F46;
+  background: #ECFDF5;
+  padding: 0.35rem 0.85rem;
   border-radius: var(--radius-full);
-  margin-top: var(--space-2);
+  border: 1px solid #A7F3D0;
 }

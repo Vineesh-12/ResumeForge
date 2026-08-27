@@ -197,9 +197,18 @@
 
 .bubble-user {
   background: #059669;
-  color: #ffffff;
+  color: #FFFFFF !important;
   border-top-right-radius: 2px;
   box-shadow: 0 2px 8px rgba(5, 150, 105, 0.25);
+}
+
+.bubble-user,
+.bubble-user *,
+.bubble-user p,
+.bubble-user .msg-paragraph,
+.bubble-user span {
+  color: #FFFFFF !important;
+  font-weight: 500;
 }
 
 .bubble-error {
