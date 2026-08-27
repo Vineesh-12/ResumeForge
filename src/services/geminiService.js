@@ -5,9 +5,12 @@
  */
 
 const GEMINI_MODELS = [
-  'gemini-2.0-flash',
-  'gemini-1.5-flash',
-  'gemini-1.5-pro'
+  'gemini-3.6-flash',
+  'gemini-3.5-flash',
+  'gemini-3.1-flash-lite',
+  'gemini-2.5-flash',
+  'gemini-flash-latest',
+  'gemini-flash-lite-latest'
 ]
 
 /**
@@ -113,6 +116,16 @@ export async function testGeminiApiKey(apiKey) {
         throw new Error('API Key access forbidden. Please check your Google AI Studio project.')
       }
 
+      if (response.status === 429) {
+        console.warn(`[Gemini API] Model ${model} rate limited during test. Trying fallback...`)
+        continue
+      }
+
+      if (response.status === 404) {
+        console.warn(`[Gemini API] Model ${model} not available. Trying fallback...`)
+        continue
+      }
+
       lastError = new Error(`Google Gemini error (${response.status}): ${errorMsg}`)
     } catch (err) {
       if (err.message && (err.message.includes('Invalid') || err.message.includes('forbidden'))) {
@@ -132,7 +145,7 @@ export async function testGeminiApiKey(apiKey) {
  * @param {string} options.prompt - The prompt text
  * @param {string} [options.systemInstruction] - The system role/instruction
  * @param {number} [options.temperature=0.2] - Generation temperature (0.0 to 1.0)
- * @param {number} [options.maxRetries=2] - Number of retry attempts for network/rate issues
+ * @param {number} [options.maxRetries=1] - Number of retry attempts for network/rate issues
  * @returns {Promise<object>} The parsed JSON object
  */
 export async function callGeminiStructured({
