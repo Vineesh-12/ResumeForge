@@ -15,7 +15,10 @@ import {
   Sparkles,
   FileText,
   Briefcase,
-  AlertTriangle
+  AlertTriangle,
+  Globe,
+  Clock,
+  Phone
 } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 import { getJobApplications } from '../services/trackerService'
@@ -23,6 +26,84 @@ import { getUserResumes } from '../services/firebase'
 import './SettingsPage.css'
 
 const SETTINGS_STORAGE_KEY = 'resumeforge_user_settings'
+
+export const COUNTRY_CODES = [
+  { code: '+91', country: 'IND', flag: '🇮🇳', label: 'IND (+91)' },
+  { code: '+1', country: 'USA', flag: '🇺🇸', label: 'USA (+1)' },
+  { code: '+1', country: 'CAN', flag: '🇨🇦', label: 'CAN (+1)' },
+  { code: '+44', country: 'GBR', flag: '🇬🇧', label: 'GBR (+44)' },
+  { code: '+61', country: 'AUS', flag: '🇦🇺', label: 'AUS (+61)' },
+  { code: '+49', country: 'DEU', flag: '🇩🇪', label: 'DEU (+49)' },
+  { code: '+33', country: 'FRA', flag: '🇫🇷', label: 'FRA (+33)' },
+  { code: '+65', country: 'SGP', flag: '🇸🇬', label: 'SGP (+65)' },
+  { code: '+971', country: 'UAE', flag: '🇦🇪', label: 'UAE (+971)' },
+  { code: '+41', country: 'CHE', flag: '🇨🇭', label: 'CHE (+41)' },
+  { code: '+31', country: 'NLD', flag: '🇳🇱', label: 'NLD (+31)' },
+  { code: '+81', country: 'JPN', flag: '🇯🇵', label: 'JPN (+81)' },
+  { code: '+82', country: 'KOR', flag: '🇰🇷', label: 'KOR (+82)' },
+  { code: '+86', country: 'CHN', flag: '🇨🇳', label: 'CHN (+86)' },
+  { code: '+55', country: 'BRA', flag: '🇧🇷', label: 'BRA (+55)' },
+  { code: '+27', country: 'ZAF', flag: '🇿🇦', label: 'ZAF (+27)' },
+  { code: '+60', country: 'MYS', flag: '🇲🇾', label: 'MYS (+60)' },
+  { code: '+63', country: 'PHL', flag: '🇵🇭', label: 'PHL (+63)' },
+  { code: '+62', country: 'IDN', flag: '🇮🇩', label: 'IDN (+62)' },
+  { code: '+84', country: 'VNM', flag: '🇻🇳', label: 'VNM (+84)' },
+  { code: '+92', country: 'PAK', flag: '🇵🇰', label: 'PAK (+92)' },
+  { code: '+880', country: 'BGD', flag: '🇧🇩', label: 'BGD (+880)' },
+  { code: '+94', country: 'LKA', flag: '🇱🇰', label: 'LKA (+94)' },
+  { code: '+977', country: 'NPL', flag: '🇳🇵', label: 'NPL (+977)' },
+  { code: '+353', country: 'IRL', flag: '🇮🇪', label: 'IRL (+353)' },
+  { code: '+46', country: 'SWE', flag: '🇸🇪', label: 'SWE (+46)' },
+  { code: '+47', country: 'NOR', flag: '🇳🇴', label: 'NOR (+47)' },
+  { code: '+45', country: 'DNK', flag: '🇩🇰', label: 'DNK (+45)' },
+  { code: '+358', country: 'FIN', flag: '🇫🇮', label: 'FIN (+358)' },
+  { code: '+34', country: 'ESP', flag: '🇪🇸', label: 'ESP (+34)' },
+  { code: '+39', country: 'ITA', flag: '🇮🇹', label: 'ITA (+39)' },
+  { code: '+48', country: 'POL', flag: '🇵🇱', label: 'POL (+48)' },
+  { code: '+64', country: 'NZL', flag: '🇳🇿', label: 'NZL (+64)' },
+  { code: '+52', country: 'MEX', flag: '🇲🇽', label: 'MEX (+52)' },
+  { code: '+54', country: 'ARG', flag: '🇦🇷', label: 'ARG (+54)' },
+  { code: '+56', country: 'CHL', flag: '🇨🇱', label: 'CHL (+56)' },
+  { code: '+57', country: 'COL', flag: '🇨🇴', label: 'COL (+57)' },
+  { code: '+234', country: 'NGA', flag: '🇳🇬', label: 'NGA (+234)' },
+  { code: '+254', country: 'KEN', flag: '🇰🇪', label: 'KEN (+254)' },
+  { code: '+20', country: 'EGY', flag: '🇪🇬', label: 'EGY (+20)' },
+  { code: '+966', country: 'SAU', flag: '🇸🇦', label: 'SAU (+966)' },
+  { code: '+974', country: 'QAT', flag: '🇶🇦', label: 'QAT (+974)' },
+  { code: '+965', country: 'KWT', flag: '🇰🇼', label: 'KWT (+965)' },
+  { code: '+968', country: 'OMN', flag: '🇴🇲', label: 'OMN (+968)' },
+  { code: '+973', country: 'BHR', flag: '🇧🇭', label: 'BHR (+973)' },
+  { code: '+972', country: 'ISR', flag: '🇮🇱', label: 'ISR (+972)' },
+  { code: '+90', country: 'TUR', flag: '🇹🇷', label: 'TUR (+90)' },
+  { code: '+380', country: 'UKR', flag: '🇺🇦', label: 'UKR (+380)' },
+  { code: '+420', country: 'CZE', flag: '🇨🇿', label: 'CZE (+420)' },
+  { code: '+36', country: 'HUN', flag: '🇭🇺', label: 'HUN (+36)' },
+  { code: '+40', country: 'ROU', flag: '🇷🇴', label: 'ROU (+40)' },
+  { code: '+30', country: 'GRC', flag: '🇬🇷', label: 'GRC (+30)' },
+  { code: '+351', country: 'PRT', flag: '🇵🇹', label: 'PRT (+351)' },
+  { code: '+43', country: 'AUT', flag: '🇦🇹', label: 'AUT (+43)' },
+  { code: '+32', country: 'BEL', flag: '🇧🇪', label: 'BEL (+32)' }
+]
+
+export const TIMEZONES = [
+  { value: 'IST (UTC+5:30)', label: 'IST (UTC+5:30) — India Standard Time (New Delhi, Mumbai, Bengaluru)' },
+  { value: 'PST (UTC-8)', label: 'PST / PDT (UTC-8 / UTC-7) — Pacific Time (San Francisco, Los Angeles, Seattle)' },
+  { value: 'EST (UTC-5)', label: 'EST / EDT (UTC-5 / UTC-4) — Eastern Time (New York, Boston, Toronto)' },
+  { value: 'CST (UTC-6)', label: 'CST / CDT (UTC-6 / UTC-5) — Central Time (Chicago, Austin, Dallas)' },
+  { value: 'MST (UTC-7)', label: 'MST / MDT (UTC-7 / UTC-6) — Mountain Time (Denver, Phoenix, Calgary)' },
+  { value: 'GMT / UTC (UTC+0)', label: 'GMT / UTC (UTC+0 / UTC+1) — Greenwich Mean Time (London, Dublin, Lisbon)' },
+  { value: 'CET (UTC+1)', label: 'CET / CEST (UTC+1 / UTC+2) — Central European Time (Berlin, Paris, Amsterdam, Zurich)' },
+  { value: 'EET (UTC+2)', label: 'EET / EEST (UTC+2 / UTC+3) — Eastern European Time (Helsinki, Athens, Bucharest)' },
+  { value: 'GST (UTC+4)', label: 'GST (UTC+4) — Gulf Standard Time (Dubai, Abu Dhabi, Muscat)' },
+  { value: 'SGT (UTC+8)', label: 'SGT / HKT / CST (UTC+8) — Singapore / Hong Kong / Beijing / Perth' },
+  { value: 'JST (UTC+9)', label: 'JST / KST (UTC+9) — Japan / Korea Standard Time (Tokyo, Seoul)' },
+  { value: 'AEST (UTC+10)', label: 'AEST / AEDT (UTC+10 / UTC+11) — Australian Eastern Time (Sydney, Melbourne, Brisbane)' },
+  { value: 'NZST (UTC+12)', label: 'NZST / NZDT (UTC+12 / UTC+13) — New Zealand Time (Auckland, Wellington)' },
+  { value: 'BRT (UTC-3)', label: 'BRT (UTC-3) — Brasilia Time (São Paulo, Rio de Janeiro, Buenos Aires)' },
+  { value: 'WAT (UTC+1)', label: 'WAT (UTC+1) — West Africa Time (Lagos, Kinshasa)' },
+  { value: 'CAT (UTC+2)', label: 'CAT (UTC+2) — Central Africa Time (Johannesburg, Cairo)' },
+  { value: 'EAT (UTC+3)', label: 'EAT (UTC+3) — East Africa Time (Nairobi, Addis Ababa)' }
+]
 
 export default function SettingsPage() {
   const { state, dispatch } = useApp()
@@ -32,8 +113,10 @@ export default function SettingsPage() {
     fullName: '',
     targetTitle: '',
     email: '',
+    countryCode: '+91',
     phone: '',
     location: '',
+    timezone: 'IST (UTC+5:30)',
     linkedIn: '',
     github: '',
     website: ''
@@ -52,22 +135,47 @@ export default function SettingsPage() {
   const [isSavedToast, setIsSavedToast] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
 
+  // Parse phone number into country code + local number
+  const extractPhoneAndCode = (rawPhone) => {
+    if (!rawPhone) return { code: '+91', number: '' }
+    const trimmed = String(rawPhone).trim()
+    for (const item of COUNTRY_CODES) {
+      if (trimmed.startsWith(item.code)) {
+        return {
+          code: item.code,
+          number: trimmed.slice(item.code.length).replace(/^[-\s]+/, '')
+        }
+      }
+    }
+    return { code: '+91', number: trimmed }
+  }
+
   // Load existing settings
   useEffect(() => {
     try {
       const stored = localStorage.getItem(SETTINGS_STORAGE_KEY)
       if (stored) {
         const parsed = JSON.parse(stored)
-        if (parsed.profile) setProfile(parsed.profile)
+        if (parsed.profile) {
+          const phoneData = extractPhoneAndCode(parsed.profile.phone || '')
+          setProfile({
+            ...parsed.profile,
+            countryCode: parsed.profile.countryCode || phoneData.code || '+91',
+            phone: parsed.profile.phone ? phoneData.number : (parsed.profile.phone || ''),
+            timezone: parsed.profile.timezone || 'IST (UTC+5:30)'
+          })
+        }
         if (parsed.preferences) setPreferences(parsed.preferences)
       } else if (state.resumeParsed) {
-        // Pre-fill from currently parsed resume
+        const phoneData = extractPhoneAndCode(state.resumeParsed.contact?.phone || '')
         setProfile({
           fullName: state.resumeParsed.name || '',
           targetTitle: state.jdParsed?.jobTitle || '',
           email: state.resumeParsed.contact?.email || state.currentUser?.email || '',
-          phone: state.resumeParsed.contact?.phone || '',
+          countryCode: phoneData.code || '+91',
+          phone: phoneData.number || '',
           location: state.resumeParsed.contact?.location || '',
+          timezone: 'IST (UTC+5:30)',
           linkedIn: state.resumeParsed.contact?.linkedIn || '',
           github: state.resumeParsed.contact?.github || '',
           website: state.resumeParsed.contact?.website || ''
@@ -86,8 +194,13 @@ export default function SettingsPage() {
   const handleSaveSettings = (e) => {
     e?.preventDefault()
 
+    const fullPhone = profile.phone ? `${profile.countryCode} ${profile.phone}` : ''
+
     const payload = {
-      profile,
+      profile: {
+        ...profile,
+        fullPhone
+      },
       preferences,
       updatedAt: new Date().toISOString()
     }
@@ -167,14 +280,20 @@ export default function SettingsPage() {
       return
     }
 
+    const formattedPhone = profile.phone ? `${profile.countryCode} ${profile.phone}` : target.contact?.phone
+    const tzCode = profile.timezone ? profile.timezone.split(' ')[0] : ''
+    const formattedLocation = profile.location 
+      ? (tzCode ? `${profile.location} (${tzCode})` : profile.location)
+      : target.contact?.location
+
     const updated = {
       ...target,
       name: profile.fullName || target.name,
       contact: {
         ...target.contact,
         email: profile.email || target.contact?.email,
-        phone: profile.phone || target.contact?.phone,
-        location: profile.location || target.contact?.location,
+        phone: formattedPhone,
+        location: formattedLocation,
         linkedIn: profile.linkedIn || target.contact?.linkedIn,
         github: profile.github || target.contact?.github,
         website: profile.website || target.contact?.website
@@ -287,26 +406,57 @@ export default function SettingsPage() {
                 />
               </div>
 
+              {/* Phone Number with Country Code Dropdown */}
               <div className="form-group">
-                <label>Phone Number</label>
-                <input
-                  type="tel"
-                  className="input-control"
-                  placeholder="e.g. +1 (555) 019-2834"
-                  value={profile.phone}
-                  onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
-                />
+                <label>Phone Number (Country Code)</label>
+                <div className="phone-input-combo">
+                  <select
+                    className="select-control country-code-select"
+                    value={profile.countryCode}
+                    onChange={(e) => setProfile({ ...profile, countryCode: e.target.value })}
+                  >
+                    {COUNTRY_CODES.map((c, i) => (
+                      <option key={`${c.country}-${c.code}-${i}`} value={c.code}>
+                        {c.flag} {c.label}
+                      </option>
+                    ))}
+                  </select>
+                  <input
+                    type="tel"
+                    className="input-control phone-number-input"
+                    placeholder="e.g. 6305473052"
+                    value={profile.phone}
+                    onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
+                  />
+                </div>
               </div>
 
+              {/* City / Location Input */}
               <div className="form-group">
-                <label>Location / Timezone</label>
+                <label>Location (City, State / Country)</label>
                 <input
                   type="text"
                   className="input-control"
-                  placeholder="e.g. San Francisco, CA (PST)"
+                  placeholder="e.g. Hyderabad, India or San Francisco, CA"
                   value={profile.location}
                   onChange={(e) => setProfile({ ...profile, location: e.target.value })}
                 />
+              </div>
+
+              {/* Timezone Dropdown */}
+              <div className="form-group">
+                <label>Standard Timezone</label>
+                <select
+                  className="select-control"
+                  value={profile.timezone}
+                  onChange={(e) => setProfile({ ...profile, timezone: e.target.value })}
+                >
+                  {TIMEZONES.map((tz) => (
+                    <option key={tz.value} value={tz.value}>
+                      {tz.label}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="form-group">
@@ -331,7 +481,7 @@ export default function SettingsPage() {
                 />
               </div>
 
-              <div className="form-group">
+              <div className="form-group" style={{ gridColumn: '1 / -1' }}>
                 <label>Portfolio / Personal Website</label>
                 <input
                   type="url"
@@ -465,7 +615,7 @@ export default function SettingsPage() {
                 <div>
                   <h4 className="text-sm font-bold">Export All My Data</h4>
                   <p className="text-xs text-muted">
-                    Download a full JSON archive containing your profile, saved resumes, and tracked jobs.
+                    Download a full JSON archive containing your profile and saved resumes.
                   </p>
                 </div>
                 <button
@@ -484,7 +634,7 @@ export default function SettingsPage() {
                 <div>
                   <h4 className="text-sm font-bold text-danger">Wipe Local Storage &amp; Cache</h4>
                   <p className="text-xs text-muted">
-                    Permanently delete all locally cached resumes and job applications on this browser.
+                    Permanently delete all locally cached resumes and preferences on this browser.
                   </p>
                 </div>
                 <button
@@ -514,7 +664,7 @@ export default function SettingsPage() {
               </div>
             </div>
             <p className="text-sm text-secondary" style={{ marginBottom: 'var(--space-4)' }}>
-              This will permanently delete all cached resumes, saved job applications, and contact preferences stored in your browser. This action cannot be undone.
+              This will permanently delete all cached resumes and contact preferences stored in your browser. This action cannot be undone.
             </p>
             <div className="modal-actions" style={{ justifyContent: 'flex-end', gap: 'var(--space-2)' }}>
               <button

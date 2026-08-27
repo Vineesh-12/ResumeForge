@@ -100,6 +100,24 @@
   }
 }
 
+/* Combined Country Code + Phone Number Input */
+.phone-input-combo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.country-code-select {
+  width: 130px;
+  flex-shrink: 0;
+  font-size: 0.825rem;
+  padding: 0.55rem 0.5rem;
+}
+
+.phone-number-input {
+  flex: 1;
+}
+
 .card-footer-actions {
   display: flex;
   align-items: center;
