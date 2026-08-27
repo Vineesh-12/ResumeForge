@@ -2,7 +2,7 @@
   padding: var(--space-6);
   display: flex;
   flex-direction: column;
-  gap: var(--space-5);
+  gap: var(--space-4);
   background: #FFFFFF;
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-xl);
@@ -23,8 +23,15 @@
   gap: var(--space-2);
 }
 
+.header-title-wrap h4 {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #0F172A;
+  margin: 0;
+}
+
 .score-badge-icon {
-  color: var(--accent-primary);
+  color: #059669;
 }
 
 .grade-badge {
@@ -33,7 +40,7 @@
   padding: 0.15rem 0.55rem;
   border-radius: var(--radius-full);
   border: 1px solid currentColor;
-  background: rgba(0, 0, 0, 0.03);
+  background: rgba(0, 0, 0, 0.02);
 }
 
 /* Circular Gauge */
@@ -41,7 +48,7 @@
   position: relative;
   width: 140px;
   height: 140px;
-  margin: 0 auto;
+  margin: 0.25rem auto 0.5rem auto;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -74,12 +81,14 @@
   font-weight: 800;
   line-height: 1;
   letter-spacing: -0.03em;
-  color: var(--text-primary);
+  color: #0F172A;
 }
 
 .gauge-score-denominator {
   font-size: 0.75rem;
-  color: var(--text-muted);
+  font-weight: 600;
+  color: #64748B;
+  margin-top: 2px;
 }
 
 /* Breakdown Progress Bars */
@@ -92,7 +101,7 @@
 .metric-row {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 5px;
 }
 
 .metric-label-row {
@@ -102,7 +111,20 @@
   font-size: 0.8rem;
 }
 
-.progress-track-bg {
+.metric-title {
+  color: #334155;
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+.metric-score-text {
+  font-size: 0.775rem;
+  font-weight: 700;
+  color: #0F172A;
+  font-family: var(--font-mono);
+}
+
+.metric-track {
   width: 100%;
   height: 6px;
   background: #F1F5F9;
@@ -110,8 +132,48 @@
   overflow: hidden;
 }
 
-.progress-bar-fill {
+.metric-fill {
   height: 100%;
   border-radius: var(--radius-full);
   transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Recommendations Box */
+.score-recommendations-card {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: var(--radius-lg);
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
+}
+
+.recs-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #0284C7;
+}
+
+.recs-header span {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #0369A1;
+}
+
+.recs-list {
+  margin: 0;
+  padding-left: 1.15rem;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.recs-list li {
+  font-size: 0.775rem;
+  color: #334155;
+  line-height: 1.45;
+  font-weight: 500;
 }

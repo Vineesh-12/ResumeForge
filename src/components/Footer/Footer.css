@@ -167,17 +167,19 @@
   padding: 0 var(--space-6);
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--space-4);
-  flex-wrap: wrap;
+  justify-content: center;
+  text-align: center;
 }
 
 .footer-copyright {
-  font-size: 0.775rem;
+  font-size: 0.8rem;
   color: var(--text-muted);
   display: flex;
   align-items: center;
-  gap: 4px;
+  justify-content: center;
+  gap: 6px;
+  margin: 0 auto;
+  text-align: center;
 }
 
 .heart-icon {

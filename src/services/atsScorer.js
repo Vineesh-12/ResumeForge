@@ -5,6 +5,7 @@
 
 export function calculateATSScore(resumeParsed, jdParsed, gapAnalysis) {
   if (!resumeParsed || !jdParsed) {
+    const missingSkills = gapAnalysis?.missing?.slice(0, 3)?.map(m => m.skill)?.join(', ')
     return {
       totalScore: 75,
       grade: 'B+',
@@ -14,11 +15,11 @@ export function calculateATSScore(resumeParsed, jdParsed, gapAnalysis) {
         structuralHierarchy: { score: 15, max: 15, label: 'Standard Section Hierarchy' },
         xyzBullets: { score: 12, max: 15, label: 'XYZ Impact Formula Bullets' },
         categoryDepth: { score: 8, max: 10, label: 'Technical Skills Breadth' },
-        contactParsability: { score: 10, max: 10, label: 'Contact Information Completeness' }
+        contactParsability: { score: 10, max: 10, label: 'Contact Info Completeness' }
       },
       recommendations: [
-        'Add missing high-priority keywords from the target job description.',
-        'Ensure measurable metrics (% or numbers) appear in all experience bullets.'
+        missingSkills ? `Incorporate target JD keywords (${missingSkills}) into your Skills & Projects.` : 'Incorporate missing target keywords from the Job Description.',
+        'Quantify achievements in your experience section with numbers or percentage gains.'
       ]
     }
   }
@@ -104,17 +105,17 @@ export function calculateATSScore(resumeParsed, jdParsed, gapAnalysis) {
   else if (totalScore >= 74) grade = 'B+'
   else if (totalScore >= 65) grade = 'B'
 
-  // Generate actionable recommendations
+  // Generate dynamic, JD-specific actionable recommendations
   const recommendations = []
   if (gapAnalysis?.missing?.length > 0) {
     const topMissing = gapAnalysis.missing.slice(0, 3).map(m => m.skill).join(', ')
-    recommendations.push(`Incorporate top missing JD keywords: ${topMissing}`)
+    recommendations.push(`Incorporate missing target keywords (${topMissing}) into your Skills & Projects.`)
   }
   if (bulletsWithMetrics < totalBullets * 0.5) {
-    recommendations.push('Quantify more achievements in your experience section with numbers, %, or latency gains.')
+    recommendations.push('Quantify achievements in your experience section with numbers or percentage gains.')
   }
-  if (!hasKwInSummary) {
-    recommendations.push('Include 2-3 target job title keywords in your Professional Summary section.')
+  if (!hasKwInSummary && jdParsed?.jobTitle) {
+    recommendations.push(`Align your Professional Summary with "${jdParsed.jobTitle}" focus keywords.`)
   }
   if (recommendations.length === 0) {
     recommendations.push('Your resume meets top-tier ATS compliance criteria across all major parsers!')

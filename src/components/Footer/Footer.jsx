@@ -74,10 +74,6 @@ export default function Footer() {
           <p className="footer-copyright">
             &copy; {new Date().getFullYear()} ResumeForge. Built with <Heart size={12} className="heart-icon" /> for job seekers worldwide. Open &amp; Free.
           </p>
-          <div className="footer-bottom-badges">
-            <span className="badge-standard">Harvard Jake Standard</span>
-            <span className="badge-standard">Google XYZ Bullet Formula</span>
-          </div>
         </div>
       </div>
     </footer>

@@ -65,6 +65,14 @@ export default function AnalysisPage() {
     }
   }
 
+  const dynamicMissing = effectiveGaps?.missing?.slice(0, 3)?.map(m => m.skill)?.join(', ')
+  const dynamicRecommendations = state.atsRecommendations || [
+    dynamicMissing
+      ? `Incorporate missing target keywords (${dynamicMissing}) into your Skills & Projects.`
+      : 'Incorporate missing target keywords from the Job Description into your Skills & Projects.',
+    'Quantify achievements in your experience section with numbers or percentage gains.'
+  ]
+
   const effectiveATSReport = {
     score: state.atsScore || 82,
     grade: state.atsGrade || 'A-',
@@ -76,10 +84,7 @@ export default function AnalysisPage() {
       categoryDepth: { score: 8, max: 10, label: 'Technical Skills Breadth' },
       contactParsability: { score: 10, max: 10, label: 'Contact Info Completeness' }
     },
-    recommendations: [
-      'Incorporate missing target keywords (Docker, AWS) into your Skills & Projects.',
-      'Quantify achievements in your experience section with numbers or percentage gains.'
-    ]
+    recommendations: dynamicRecommendations
   }
 
   return (
