@@ -12,13 +12,10 @@ import {
   User,
   LogOut,
   FolderOpen,
-  Briefcase,
   Layers,
   Settings as SettingsIcon,
   Sparkles,
-  ChevronDown,
-  Lock,
-  ExternalLink
+  ChevronDown
 } from 'lucide-react'
 import { useApp } from '../../context/AppContext'
 import { signOutUser } from '../../services/firebase'
@@ -106,12 +103,10 @@ export default function Header() {
     }
   }
 
-  const isTrackerActive = location.pathname === '/tracker'
-
   return (
     <>
       <header className="site-header glass-card">
-        <div className="header-container">
+        <div className="header-container header-full-width">
           {/* FAR LEFT: Brand Logo */}
           <div className="brand-section" onClick={() => navigate('/')}>
             <div className="brand-icon">
@@ -126,7 +121,7 @@ export default function Header() {
             </div>
           </div>
 
-          {/* CENTER: Navigation (Wizard Stepper or Clean 2-Link Menu) */}
+          {/* CENTER: Navigation (Wizard Stepper or Clean Single Link) */}
           {isWizardRoute ? (
             <nav className="stepper-nav" aria-label="Progress Tracker">
               {STEPS.map((step, idx) => {
@@ -171,10 +166,6 @@ export default function Header() {
               <Link to="/app" className={`nav-link-item ${location.pathname === '/app' ? 'nav-active' : ''}`}>
                 <Sparkles size={15} />
                 <span>Resume Optimizer</span>
-              </Link>
-              <Link to="/tracker" className={`nav-link-item ${isTrackerActive ? 'nav-active' : ''}`}>
-                <Briefcase size={15} />
-                <span>Job Tracker</span>
               </Link>
             </div>
           )}

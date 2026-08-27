@@ -89,18 +89,13 @@ export default function LandingPage() {
           </h1>
 
           <p className="hero-main-subtitle animate-fade-up">
-            Beat automated Applicant Tracking Systems with precision keyword matching, battle-tested Harvard-Jake formatting, and a dedicated career search cockpit.
+            Beat automated Applicant Tracking Systems with precision keyword matching, battle-tested Harvard-Jake formatting, and live non-destructive AI bullet optimization.
           </p>
 
           <div className="hero-cta-group animate-fade-up">
             <Link to="/app" className="btn btn-primary btn-lg hero-cta-btn">
               <span>Optimize My Resume Free</span>
               <ArrowRight size={18} />
-            </Link>
-
-            <Link to="/tracker" className="btn btn-secondary btn-lg">
-              <Briefcase size={18} />
-              <span>Career Job Tracker</span>
             </Link>
           </div>
 
@@ -223,8 +218,8 @@ export default function LandingPage() {
           <div className="step-card glass-card">
             <div className="step-number-circle">4</div>
             <div className="step-card-content">
-              <h3>Export Clean PDF &amp; Track</h3>
-              <p>Download pure vector Harvard-Jake PDFs and organize applications in your personal Kanban Career Tracker.</p>
+              <h3>Export Clean PDF</h3>
+              <p>Download pure vector Harvard-Jake PDFs ready for instant submission to Workday, Greenhouse, and Lever.</p>
             </div>
           </div>
         </div>
@@ -261,10 +256,10 @@ export default function LandingPage() {
           {/* Bento Card 3 */}
           <div className="bento-item glass-card">
             <div className="bento-icon-pill">
-              <Briefcase size={20} />
+              <Sparkles size={20} />
             </div>
-            <h3>Kanban Career Tracker</h3>
-            <p>Track your job search pipeline from Saved to Applied, Interview Scheduled, and Offer Received with version history.</p>
+            <h3>Google XYZ Bullet Rewriter</h3>
+            <p>Non-destructive AI transforms vague job bullets into high-impact, quantified metric statements that impress hiring managers.</p>
           </div>
 
           {/* Bento Card 4 */}
@@ -317,10 +312,10 @@ export default function LandingPage() {
                 <td><Check size={18} className="text-emerald" /> Extension only</td>
               </tr>
               <tr>
-                <td>Built-in Kanban Job Tracker</td>
-                <td className="highlight-col"><Check size={18} className="text-emerald" /> Included Free</td>
-                <td><X size={18} className="text-danger" /> Not available</td>
-                <td>Paywalled tier</td>
+                <td>Google XYZ AI Bullet Rewriter</td>
+                <td className="highlight-col"><Check size={18} className="text-emerald" /> Non-destructive metrics</td>
+                <td><X size={18} className="text-danger" /> Generic AI overwrite</td>
+                <td>Limited prompts</td>
               </tr>
               <tr>
                 <td>Client-Side Privacy (Zero Data Sold)</td>

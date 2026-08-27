@@ -32,7 +32,6 @@ export default function Footer() {
           <h5 className="footer-heading">Product</h5>
           <ul className="footer-nav-list">
             <li><Link to="/app">ATS Resume Optimizer</Link></li>
-            <li><Link to="/tracker">Job Application Tracker</Link></li>
             <li><Link to="/settings">Account &amp; Profile Defaults</Link></li>
             <li><Link to="/export">Harvard-Jake Template Gallery</Link></li>
           </ul>
