@@ -5,7 +5,6 @@ import {
   Key,
   Sliders,
   Shield,
-  Download,
   Trash2,
   CheckCircle2,
   ExternalLink,
@@ -31,7 +30,6 @@ import {
   RefreshCw
 } from 'lucide-react'
 import { useApp } from '../context/AppContext'
-import { getJobApplications } from '../services/trackerService'
 import {
   getUserResumes,
   updateUserProfileName,
@@ -429,92 +427,6 @@ export default function SettingsPage() {
     }
   }
 
-  // Export All Data as JSON Archive
-  const handleExportDataArchive = async () => {
-    try {
-      const applications = await getJobApplications(state.currentUser?.uid)
-      let cloudResumes = []
-      if (state.currentUser) {
-        try {
-          cloudResumes = await getUserResumes(state.currentUser.uid)
-        } catch {
-          cloudResumes = state.userResumes || []
-        }
-      }
-
-      const archive = {
-        app: 'ResumeForge',
-        version: '1.0.0',
-        exportedAt: new Date().toISOString(),
-        user: {
-          uid: state.currentUser?.uid || 'guest_user',
-          email: state.currentUser?.email || profile.email || 'guest@resumeforge.local',
-          profile
-        },
-        preferences,
-        currentActiveResume: state.tailoredResume || state.resumeParsed,
-        savedCloudResumes: cloudResumes,
-        jobApplications: applications
-      }
-
-      const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(archive, null, 2))
-      const downloadAnchor = document.createElement('a')
-      downloadAnchor.setAttribute('href', dataStr)
-      downloadAnchor.setAttribute('download', `ResumeForge_Archive_${new Date().toISOString().slice(0, 10)}.json`)
-      document.body.appendChild(downloadAnchor)
-      downloadAnchor.click()
-      downloadAnchor.remove()
-
-      dispatch({
-        type: 'SET_TOAST',
-        payload: { message: 'Full data archive exported as JSON!', type: 'success' }
-      })
-    } catch (err) {
-      console.error('Failed to export data:', err)
-      dispatch({ type: 'SET_ERROR', payload: 'Failed to generate data archive.' })
-    }
-  }
-
-  // Apply Contact Defaults to Active Resume
-  const handleApplyDefaultsToResume = () => {
-    const target = state.tailoredResume || state.resumeParsed
-    if (!target) {
-      dispatch({ type: 'SET_ERROR', payload: 'No active resume found. Upload a resume first.' })
-      return
-    }
-
-    const formattedPhone = profile.phone ? `${profile.countryCode} ${profile.phone}` : target.contact?.phone
-    const tzCode = profile.timezone ? profile.timezone.split(' ')[0] : ''
-    const formattedLocation = profile.location 
-      ? (tzCode ? `${profile.location} (${tzCode})` : profile.location)
-      : target.contact?.location
-
-    const updated = {
-      ...target,
-      name: profile.fullName || target.name,
-      contact: {
-        ...target.contact,
-        email: profile.email || target.contact?.email,
-        phone: formattedPhone,
-        location: formattedLocation,
-        linkedIn: profile.linkedIn || target.contact?.linkedIn,
-        github: profile.github || target.contact?.github,
-        website: profile.website || target.contact?.website
-      }
-    }
-
-    if (state.tailoredResume) {
-      dispatch({ type: 'SET_TAILORED_RESUME', payload: updated })
-    } else {
-      dispatch({ type: 'SET_RESUME_PARSED', payload: updated })
-    }
-
-    dispatch({
-      type: 'SET_TOAST',
-      payload: { message: 'Profile defaults applied to active resume canvas!', type: 'success' }
-    })
-  }
-
   return (
     <div className="settings-page-container animate-fade-up">
       {/* Header Banner */}
@@ -542,7 +454,7 @@ export default function SettingsPage() {
       </div>
 
       <div className="settings-grid">
-        {/* Left Column: Personal Identity, Contact, & Socials */}
+        {/* Left Column: Personal Identity, Contact, Socials, & Resume Preferences */}
         <div className="settings-main-col">
           {/* Card 1: Personal Profile & Identity */}
           <div className="glass-card settings-card">
@@ -741,23 +653,53 @@ export default function SettingsPage() {
                 />
               </div>
             </div>
+          </div>
 
-            <div className="card-footer-actions">
-              <button
-                type="button"
-                className="btn btn-secondary btn-sm"
-                onClick={handleApplyDefaultsToResume}
-              >
-                <Sparkles size={14} />
-                <span>Apply Defaults to Active Resume Canvas</span>
-              </button>
+          {/* Card 4 (Moved to bottom of Professional Links horizontally): Resume Engine Preferences */}
+          <div className="glass-card settings-card">
+            <div className="settings-card-header">
+              <div className="card-icon-pill">
+                <Sliders size={18} />
+              </div>
+              <div>
+                <h3>Resume Engine Preferences</h3>
+                <p className="text-xs text-muted">Default ATS typography &amp; paper export formatting.</p>
+              </div>
+            </div>
+
+            <div className="settings-form-grid">
+              <div className="form-group">
+                <label>Default ATS Template</label>
+                <select
+                  className="select-control"
+                  value={preferences.defaultTemplate}
+                  onChange={(e) => setPreferences({ ...preferences, defaultTemplate: e.target.value })}
+                >
+                  <option value="harvard">Harvard-Jake (Standard Single Column)</option>
+                  <option value="tech">Tech Lead Minimalist (Clean Badges)</option>
+                  <option value="executive">Executive Classic (Traditional Serif)</option>
+                  <option value="modern">Modern Compact (Date-Aligned Side)</option>
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label>Default Paper Format</label>
+                <select
+                  className="select-control"
+                  value={preferences.paperFormat}
+                  onChange={(e) => setPreferences({ ...preferences, paperFormat: e.target.value })}
+                >
+                  <option value="letter">US Letter (8.5 × 11 in — US/Canada standard)</option>
+                  <option value="a4">International A4 (210 × 297 mm — Global standard)</option>
+                </select>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Right Column: Account Security & AI Engine */}
         <div className="settings-side-col">
-          {/* Card 4: Security & Password Management */}
+          {/* Card 5: Security & Password Management */}
           <div className="glass-card settings-card">
             <div className="settings-card-header">
               <div className="card-icon-pill">
@@ -846,7 +788,7 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          {/* Card 5: AI Engine & Gemini Key */}
+          {/* Card 6: AI Engine & Gemini Key */}
           <div className="glass-card settings-card">
             <div className="settings-card-header">
               <div className="card-icon-pill">
@@ -895,64 +837,19 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          {/* Card 6: Resume Preferences & Delete Account */}
+          {/* Card 7: Delete Account */}
           <div className="glass-card settings-card">
             <div className="settings-card-header">
-              <div className="card-icon-pill">
-                <Sliders size={18} />
+              <div className="card-icon-pill" style={{ background: '#FEF2F2', borderColor: '#FECACA', color: '#DC2626' }}>
+                <Trash2 size={18} />
               </div>
               <div>
-                <h3>Resume Engine Preferences</h3>
-                <p className="text-xs text-muted">Default typography &amp; formatting.</p>
+                <h3 className="text-danger">Danger Zone</h3>
+                <p className="text-xs text-muted">Irreversible account actions.</p>
               </div>
             </div>
-
-            <div className="settings-form-grid" style={{ gridTemplateColumns: '1fr' }}>
-              <div className="form-group">
-                <label>Default ATS Template</label>
-                <select
-                  className="select-control"
-                  value={preferences.defaultTemplate}
-                  onChange={(e) => setPreferences({ ...preferences, defaultTemplate: e.target.value })}
-                >
-                  <option value="harvard">Harvard-Jake (Standard Single Column)</option>
-                  <option value="tech">Tech Lead Minimalist (Clean Badges)</option>
-                  <option value="executive">Executive Classic (Traditional Serif)</option>
-                  <option value="modern">Modern Compact (Date-Aligned Side)</option>
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label>Default Paper Format</label>
-                <select
-                  className="select-control"
-                  value={preferences.paperFormat}
-                  onChange={(e) => setPreferences({ ...preferences, paperFormat: e.target.value })}
-                >
-                  <option value="letter">US Letter (8.5 × 11 in — US/Canada standard)</option>
-                  <option value="a4">International A4 (210 × 297 mm — Global standard)</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="governance-divider" />
 
             <div className="data-governance-stack">
-              <div className="governance-item">
-                <div>
-                  <h4 className="text-sm font-bold">Export All My Data</h4>
-                  <p className="text-xs text-muted">Download JSON backup archive.</p>
-                </div>
-                <button
-                  type="button"
-                  className="btn btn-secondary btn-sm"
-                  onClick={handleExportDataArchive}
-                >
-                  <Download size={14} />
-                  <span>Export JSON</span>
-                </button>
-              </div>
-
               {/* Delete Account with Email OTP Verification */}
               <div className="governance-item">
                 <div>
