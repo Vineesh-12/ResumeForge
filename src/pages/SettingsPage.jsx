@@ -23,67 +23,10 @@ import {
 import { useApp } from '../context/AppContext'
 import { getJobApplications } from '../services/trackerService'
 import { getUserResumes } from '../services/firebase'
+import CountryCodeSelect, { COUNTRIES } from '../components/CountryCodeSelect/CountryCodeSelect'
 import './SettingsPage.css'
 
 const SETTINGS_STORAGE_KEY = 'resumeforge_user_settings'
-
-export const COUNTRY_CODES = [
-  { code: '+91', country: 'IND', flag: '🇮🇳', label: 'IND (+91)' },
-  { code: '+1', country: 'USA', flag: '🇺🇸', label: 'USA (+1)' },
-  { code: '+1', country: 'CAN', flag: '🇨🇦', label: 'CAN (+1)' },
-  { code: '+44', country: 'GBR', flag: '🇬🇧', label: 'GBR (+44)' },
-  { code: '+61', country: 'AUS', flag: '🇦🇺', label: 'AUS (+61)' },
-  { code: '+49', country: 'DEU', flag: '🇩🇪', label: 'DEU (+49)' },
-  { code: '+33', country: 'FRA', flag: '🇫🇷', label: 'FRA (+33)' },
-  { code: '+65', country: 'SGP', flag: '🇸🇬', label: 'SGP (+65)' },
-  { code: '+971', country: 'UAE', flag: '🇦🇪', label: 'UAE (+971)' },
-  { code: '+41', country: 'CHE', flag: '🇨🇭', label: 'CHE (+41)' },
-  { code: '+31', country: 'NLD', flag: '🇳🇱', label: 'NLD (+31)' },
-  { code: '+81', country: 'JPN', flag: '🇯🇵', label: 'JPN (+81)' },
-  { code: '+82', country: 'KOR', flag: '🇰🇷', label: 'KOR (+82)' },
-  { code: '+86', country: 'CHN', flag: '🇨🇳', label: 'CHN (+86)' },
-  { code: '+55', country: 'BRA', flag: '🇧🇷', label: 'BRA (+55)' },
-  { code: '+27', country: 'ZAF', flag: '🇿🇦', label: 'ZAF (+27)' },
-  { code: '+60', country: 'MYS', flag: '🇲🇾', label: 'MYS (+60)' },
-  { code: '+63', country: 'PHL', flag: '🇵🇭', label: 'PHL (+63)' },
-  { code: '+62', country: 'IDN', flag: '🇮🇩', label: 'IDN (+62)' },
-  { code: '+84', country: 'VNM', flag: '🇻🇳', label: 'VNM (+84)' },
-  { code: '+92', country: 'PAK', flag: '🇵🇰', label: 'PAK (+92)' },
-  { code: '+880', country: 'BGD', flag: '🇧🇩', label: 'BGD (+880)' },
-  { code: '+94', country: 'LKA', flag: '🇱🇰', label: 'LKA (+94)' },
-  { code: '+977', country: 'NPL', flag: '🇳🇵', label: 'NPL (+977)' },
-  { code: '+353', country: 'IRL', flag: '🇮🇪', label: 'IRL (+353)' },
-  { code: '+46', country: 'SWE', flag: '🇸🇪', label: 'SWE (+46)' },
-  { code: '+47', country: 'NOR', flag: '🇳🇴', label: 'NOR (+47)' },
-  { code: '+45', country: 'DNK', flag: '🇩🇰', label: 'DNK (+45)' },
-  { code: '+358', country: 'FIN', flag: '🇫🇮', label: 'FIN (+358)' },
-  { code: '+34', country: 'ESP', flag: '🇪🇸', label: 'ESP (+34)' },
-  { code: '+39', country: 'ITA', flag: '🇮🇹', label: 'ITA (+39)' },
-  { code: '+48', country: 'POL', flag: '🇵🇱', label: 'POL (+48)' },
-  { code: '+64', country: 'NZL', flag: '🇳🇿', label: 'NZL (+64)' },
-  { code: '+52', country: 'MEX', flag: '🇲🇽', label: 'MEX (+52)' },
-  { code: '+54', country: 'ARG', flag: '🇦🇷', label: 'ARG (+54)' },
-  { code: '+56', country: 'CHL', flag: '🇨🇱', label: 'CHL (+56)' },
-  { code: '+57', country: 'COL', flag: '🇨🇴', label: 'COL (+57)' },
-  { code: '+234', country: 'NGA', flag: '🇳🇬', label: 'NGA (+234)' },
-  { code: '+254', country: 'KEN', flag: '🇰🇪', label: 'KEN (+254)' },
-  { code: '+20', country: 'EGY', flag: '🇪🇬', label: 'EGY (+20)' },
-  { code: '+966', country: 'SAU', flag: '🇸🇦', label: 'SAU (+966)' },
-  { code: '+974', country: 'QAT', flag: '🇶🇦', label: 'QAT (+974)' },
-  { code: '+965', country: 'KWT', flag: '🇰🇼', label: 'KWT (+965)' },
-  { code: '+968', country: 'OMN', flag: '🇴🇲', label: 'OMN (+968)' },
-  { code: '+973', country: 'BHR', flag: '🇧🇭', label: 'BHR (+973)' },
-  { code: '+972', country: 'ISR', flag: '🇮🇱', label: 'ISR (+972)' },
-  { code: '+90', country: 'TUR', flag: '🇹🇷', label: 'TUR (+90)' },
-  { code: '+380', country: 'UKR', flag: '🇺🇦', label: 'UKR (+380)' },
-  { code: '+420', country: 'CZE', flag: '🇨🇿', label: 'CZE (+420)' },
-  { code: '+36', country: 'HUN', flag: '🇭🇺', label: 'HUN (+36)' },
-  { code: '+40', country: 'ROU', flag: '🇷🇴', label: 'ROU (+40)' },
-  { code: '+30', country: 'GRC', flag: '🇬🇷', label: 'GRC (+30)' },
-  { code: '+351', country: 'PRT', flag: '🇵🇹', label: 'PRT (+351)' },
-  { code: '+43', country: 'AUT', flag: '🇦🇹', label: 'AUT (+43)' },
-  { code: '+32', country: 'BEL', flag: '🇧🇪', label: 'BEL (+32)' }
-]
 
 export const TIMEZONES = [
   { value: 'IST (UTC+5:30)', label: 'IST (UTC+5:30) — India Standard Time (New Delhi, Mumbai, Bengaluru)' },
@@ -139,7 +82,7 @@ export default function SettingsPage() {
   const extractPhoneAndCode = (rawPhone) => {
     if (!rawPhone) return { code: '+91', number: '' }
     const trimmed = String(rawPhone).trim()
-    for (const item of COUNTRY_CODES) {
+    for (const item of COUNTRIES) {
       if (trimmed.startsWith(item.code)) {
         return {
           code: item.code,
@@ -410,17 +353,10 @@ export default function SettingsPage() {
               <div className="form-group">
                 <label>Phone Number (Country Code)</label>
                 <div className="phone-input-combo">
-                  <select
-                    className="select-control country-code-select"
+                  <CountryCodeSelect
                     value={profile.countryCode}
-                    onChange={(e) => setProfile({ ...profile, countryCode: e.target.value })}
-                  >
-                    {COUNTRY_CODES.map((c, i) => (
-                      <option key={`${c.country}-${c.code}-${i}`} value={c.code}>
-                        {c.flag} {c.label}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(val) => setProfile({ ...profile, countryCode: val })}
+                  />
                   <input
                     type="tel"
                     className="input-control phone-number-input"
