@@ -34,11 +34,11 @@ import {
   getUserResumes,
   updateUserProfileName,
   updateUserAccountPassword,
+  sendPasswordReset,
   checkUsernameAvailability,
   claimUsername,
   deleteUserAccountAndCloudData
 } from '../services/firebase'
-import { sendOtpEmail } from '../services/emailService'
 import CountryCodeSelect, { COUNTRIES } from '../components/CountryCodeSelect/CountryCodeSelect'
 import './SettingsPage.css'
 
@@ -95,27 +95,12 @@ export default function SettingsPage() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false)
+  const [isSendingResetEmail, setIsSendingResetEmail] = useState(false)
 
-  // Password Reset with Email OTP Modal State (Zero Redirect Links)
-  const [showPwdModal, setShowPwdModal] = useState(false)
-  const [pwdStep, setPwdStep] = useState(1) // 1: Send OTP, 2: Enter OTP + New Password
-  const [pwdGeneratedOtp, setPwdGeneratedOtp] = useState('')
-  const [pwdEnteredOtp, setPwdEnteredOtp] = useState('')
-  const [modalNewPwd, setModalNewPwd] = useState('')
-  const [modalConfirmPwd, setModalConfirmPwd] = useState('')
-  const [modalShowPwd, setModalShowPwd] = useState(false)
-  const [pwdOtpError, setPwdOtpError] = useState('')
-  const [pwdResendCountdown, setPwdResendCountdown] = useState(0)
-  const [isSendingPwdOtp, setIsSendingPwdOtp] = useState(false)
-  const [isResettingPwd, setIsResettingPwd] = useState(false)
-
-  // Account Deletion & OTP State
+  // Account Deletion State
   const [showDeleteModal, setShowDeleteModal] = useState(false)
-  const [deleteStep, setDeleteStep] = useState(1) // 1: Send OTP, 2: Enter OTP
-  const [generatedOtp, setGeneratedOtp] = useState('')
-  const [enteredOtp, setEnteredOtp] = useState('')
-  const [otpError, setOtpError] = useState('')
-  const [resendCountdown, setResendCountdown] = useState(0)
+  const [confirmEmailInput, setConfirmEmailInput] = useState('')
+  const [deleteError, setDeleteError] = useState('')
   const [isDeleting, setIsDeleting] = useState(false)
 
   // Preferences Form State
@@ -128,23 +113,6 @@ export default function SettingsPage() {
   // API Key State
   const [apiKeyInput, setApiKeyInput] = useState('')
   const [showApiKey, setShowApiKey] = useState(false)
-
-  // Resend OTP Countdown Timers
-  useEffect(() => {
-    let timer
-    if (resendCountdown > 0) {
-      timer = setTimeout(() => setResendCountdown(resendCountdown - 1), 1000)
-    }
-    return () => clearTimeout(timer)
-  }, [resendCountdown])
-
-  useEffect(() => {
-    let timer
-    if (pwdResendCountdown > 0) {
-      timer = setTimeout(() => setPwdResendCountdown(pwdResendCountdown - 1), 1000)
-    }
-    return () => clearTimeout(timer)
-  }, [pwdResendCountdown])
 
   // Parse phone number into country code + local number
   const extractPhoneAndCode = (rawPhone) => {
@@ -337,7 +305,7 @@ export default function SettingsPage() {
       if (err.code === 'auth/requires-recent-login') {
         dispatch({
           type: 'SET_ERROR',
-          payload: 'Security check: Please log in again before changing your password, or use the email verification code below.'
+          payload: 'Security notice: Please use the "Send Password Reset Link" button below to reset your password via your email.'
         })
       } else {
         dispatch({ type: 'SET_ERROR', payload: err.message || 'Failed to update password.' })
@@ -347,132 +315,51 @@ export default function SettingsPage() {
     }
   }
 
-  // Handle Password Reset Flow (Zero Redirect Links, Code Verified In-App)
-  const handleOpenPwdModal = () => {
-    setPwdStep(1)
-    setPwdEnteredOtp('')
-    setModalNewPwd('')
-    setModalConfirmPwd('')
-    setPwdOtpError('')
-    setShowPwdModal(true)
-  }
-
-  const handleSendPwdOtp = async () => {
+  // Handle Send Password Reset Email Link
+  const handleSendResetEmail = async () => {
     const targetEmail = profile.email || state.currentUser?.email
     if (!targetEmail) {
       dispatch({ type: 'SET_ERROR', payload: 'Please enter your registered email address first.' })
       return
     }
 
-    setIsSendingPwdOtp(true)
-    const code = Math.floor(100000 + Math.random() * 900000).toString()
-    setPwdGeneratedOtp(code)
-    setPwdStep(2)
-    setPwdOtpError('')
-    setPwdResendCountdown(45)
-
+    setIsSendingResetEmail(true)
     try {
-      // Dispatches professional, category-specific email without redirect links
-      await sendOtpEmail(targetEmail, code, 'PASSWORD_RESET')
+      await sendPasswordReset(targetEmail)
       dispatch({
         type: 'SET_TOAST',
         payload: {
-          message: `Password reset verification code sent to ${targetEmail}. Check your inbox.`,
+          message: `Password reset email sent to ${targetEmail}! Check your inbox.`,
           type: 'success'
         }
       })
     } catch (err) {
-      console.error('Error sending reset OTP:', err)
+      console.error('Reset email error:', err)
+      dispatch({ type: 'SET_ERROR', payload: err.message || 'Failed to send password reset email.' })
     } finally {
-      setIsSendingPwdOtp(false)
-    }
-  }
-
-  const handleConfirmPwdResetWithOtp = async (e) => {
-    e.preventDefault()
-    if (!pwdEnteredOtp || pwdEnteredOtp.trim().length !== 6) {
-      setPwdOtpError('Please enter the 6-digit code sent to your email.')
-      return
-    }
-    if (pwdEnteredOtp.trim() !== pwdGeneratedOtp.trim()) {
-      setPwdOtpError('Invalid 6-digit code. Please verify the code sent to your email.')
-      return
-    }
-    if (!modalNewPwd || modalNewPwd.length < 6) {
-      setPwdOtpError('New password must be at least 6 characters long.')
-      return
-    }
-    if (modalNewPwd !== modalConfirmPwd) {
-      setPwdOtpError('New password and confirmation do not match.')
-      return
-    }
-
-    setIsResettingPwd(true)
-    try {
-      await updateUserAccountPassword(modalNewPwd)
-      setShowPwdModal(false)
-      dispatch({
-        type: 'SET_TOAST',
-        payload: {
-          message: 'Password successfully updated! You can now use your new password.',
-          type: 'success'
-        }
-      })
-    } catch (err) {
-      console.error('Failed to reset password:', err)
-      setPwdOtpError(err.message || 'Failed to update password.')
-    } finally {
-      setIsResettingPwd(false)
+      setIsSendingResetEmail(false)
     }
   }
 
   // Open Delete Account Modal
   const handleOpenDeleteModal = () => {
-    setDeleteStep(1)
-    setEnteredOtp('')
-    setOtpError('')
-    setGeneratedOtp('')
+    setConfirmEmailInput('')
+    setDeleteError('')
     setShowDeleteModal(true)
   }
 
-  // Send 6-Digit Deletion Verification OTP to Email
-  const handleSendDeleteOtp = async () => {
-    const targetEmail = profile.email || state.currentUser?.email
-    if (!targetEmail) {
-      dispatch({ type: 'SET_ERROR', payload: 'Please enter your registered email address in your profile first.' })
-      return
-    }
-
-    const code = Math.floor(100000 + Math.random() * 900000).toString()
-    setGeneratedOtp(code)
-    setDeleteStep(2)
-    setOtpError('')
-    setResendCountdown(45)
-
-    try {
-      // Dispatches category-aligned deletion authorization email with 6-digit code
-      await sendOtpEmail(targetEmail, code, 'DELETE_ACCOUNT')
-      dispatch({
-        type: 'SET_TOAST',
-        payload: {
-          message: `Security verification OTP sent to ${targetEmail}. Check your inbox.`,
-          type: 'success'
-        }
-      })
-    } catch (emailErr) {
-      console.warn('Security email dispatch notice:', emailErr)
-    }
-  }
-
-  // Confirm Account Deletion with OTP
+  // Confirm Account Deletion
   const handleConfirmDeleteAccount = async () => {
-    if (!enteredOtp || enteredOtp.trim().length !== 6) {
-      setOtpError('Please enter the 6-digit OTP code sent to your email.')
+    const targetEmail = (profile.email || state.currentUser?.email || '').trim().toLowerCase()
+    const enteredEmail = confirmEmailInput.trim().toLowerCase()
+
+    if (!enteredEmail) {
+      setDeleteError('Please type your registered email address to confirm deletion.')
       return
     }
 
-    if (enteredOtp.trim() !== generatedOtp.trim()) {
-      setOtpError('Invalid security OTP code. Please enter the exact 6-digit code sent to your email.')
+    if (targetEmail && enteredEmail !== targetEmail) {
+      setDeleteError(`Email does not match. Please type "${targetEmail}" exactly to confirm.`)
       return
     }
 
@@ -500,7 +387,7 @@ export default function SettingsPage() {
       navigate('/')
     } catch (err) {
       console.error('Failed to delete account:', err)
-      setOtpError('Failed to complete account deletion: ' + (err.message || 'Unknown error'))
+      setDeleteError('Failed to complete account deletion: ' + (err.message || 'Unknown error'))
     } finally {
       setIsDeleting(false)
     }
@@ -786,7 +673,7 @@ export default function SettingsPage() {
               </div>
               <div>
                 <h3>Account Security &amp; Password</h3>
-                <p className="text-xs text-muted">Update password or receive in-app email verification code.</p>
+                <p className="text-xs text-muted">Update password or send official password reset email.</p>
               </div>
             </div>
 
@@ -799,21 +686,22 @@ export default function SettingsPage() {
                 </span>
               </div>
 
-              {/* In-App Email Password Reset Code Modal Trigger */}
+              {/* Send Reset Email Link */}
               <div className="security-action-box">
                 <div>
-                  <h4 className="text-sm font-bold">Reset Password via Email Code</h4>
+                  <h4 className="text-sm font-bold">Email Password Reset Link</h4>
                   <p className="text-xs text-muted">
-                    Receive a 6-digit verification code to your email to set a new password on this website directly. No redirect links required.
+                    Receive an official password reset email to set a new password securely.
                   </p>
                 </div>
                 <button
                   type="button"
+                  disabled={isSendingResetEmail}
                   className="btn btn-secondary btn-sm"
-                  onClick={handleOpenPwdModal}
+                  onClick={handleSendResetEmail}
                 >
-                  <KeyRound size={14} />
-                  <span>Email Password Reset Code</span>
+                  <Mail size={14} />
+                  <span>{isSendingResetEmail ? 'Sending...' : 'Send Password Reset Email'}</span>
                 </button>
               </div>
 
@@ -821,7 +709,7 @@ export default function SettingsPage() {
 
               {/* Direct Password Change Form */}
               <form onSubmit={handleUpdatePassword} className="password-change-form">
-                <h4 className="text-sm font-bold">Update Account Password</h4>
+                <h4 className="text-sm font-bold">Update Account Password Directly</h4>
                 
                 <div className="form-group">
                   <label>New Password</label>
@@ -860,7 +748,7 @@ export default function SettingsPage() {
                   className="btn btn-primary btn-sm btn-update-pwd"
                 >
                   <Lock size={14} />
-                  <span>{isUpdatingPassword ? 'Updating Password...' : 'Update Password'}</span>
+                  <span>{isUpdatingPassword ? 'Updating...' : 'Update Password'}</span>
                 </button>
               </form>
             </div>
@@ -923,17 +811,16 @@ export default function SettingsPage() {
               </div>
               <div>
                 <h3 className="text-danger">Danger Zone</h3>
-                <p className="text-xs text-muted">Irreversible account actions.</p>
+                <p className="text-xs text-muted">Permanent account removal.</p>
               </div>
             </div>
 
             <div className="data-governance-stack">
-              {/* Delete Account with Email OTP Verification */}
               <div className="governance-item">
                 <div>
                   <h4 className="text-sm font-bold text-danger">Delete Account</h4>
                   <p className="text-xs text-muted">
-                    Permanently delete your profile, email, phone number, and all resumes.
+                    Permanently erase your profile, email, phone number, and all resumes.
                   </p>
                 </div>
                 <button
@@ -950,165 +837,7 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* In-App Password Reset Modal with Email OTP Verification (No Redirect Links) */}
-      {showPwdModal && (
-        <div className="modal-overlay">
-          <div className="modal-content animate-fade-in delete-account-dialog">
-            <div className="modal-header">
-              <div className="modal-title-group">
-                <div className="modal-icon" style={{ background: '#ECFDF5', borderColor: '#A7F3D0', color: '#059669' }}>
-                  <KeyRound size={20} />
-                </div>
-                <div>
-                  <h3>Reset Password via Email OTP</h3>
-                  <span className="text-xs text-muted">Step {pwdStep} of 2: Code Verification</span>
-                </div>
-              </div>
-              <button
-                type="button"
-                className="btn-modal-close"
-                onClick={() => setShowPwdModal(false)}
-              >
-                ✕
-              </button>
-            </div>
-
-            {pwdStep === 1 ? (
-              <div className="delete-step-container">
-                <div className="otp-request-box">
-                  <div className="otp-request-info">
-                    <Mail size={18} className="text-emerald" />
-                    <div>
-                      <h4 className="text-sm font-bold">Receive 6-Digit Password Code</h4>
-                      <p className="text-xs text-muted">
-                        We will send a 6-digit security code directly to your email:
-                      </p>
-                      <span className="text-xs font-mono font-bold text-emerald">
-                        {profile.email || state.currentUser?.email || 'your email address'}
-                      </span>
-                    </div>
-                  </div>
-
-                  <button
-                    type="button"
-                    disabled={isSendingPwdOtp}
-                    className="btn btn-primary btn-send-otp"
-                    onClick={handleSendPwdOtp}
-                  >
-                    <Send size={15} />
-                    <span>{isSendingPwdOtp ? 'Sending Code...' : 'Send 6-Digit Code to Email'}</span>
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <form onSubmit={handleConfirmPwdResetWithOtp} className="delete-step-container">
-                <div className="otp-entry-box">
-                  <div className="otp-header-pill">
-                    <KeyRound size={16} className="text-emerald" />
-                    <span className="text-xs font-bold">6-Digit Code Dispatched</span>
-                  </div>
-
-                  <p className="text-xs text-secondary text-center">
-                    Check your email (<strong>{profile.email || state.currentUser?.email}</strong>) and enter the 6-digit code below:
-                  </p>
-
-                  <div className="otp-input-center">
-                    <input
-                      type="text"
-                      maxLength={6}
-                      autoFocus
-                      placeholder="• • • • • •"
-                      className="input-control otp-code-field"
-                      value={pwdEnteredOtp}
-                      onChange={(e) => {
-                        const val = e.target.value.replace(/[^0-9]/g, '')
-                        setPwdEnteredOtp(val)
-                        if (pwdOtpError) setPwdOtpError('')
-                      }}
-                    />
-                  </div>
-
-                  {/* New Password Inputs */}
-                  <div className="form-group" style={{ width: '100%', marginTop: 'var(--space-2)' }}>
-                    <label>New Password</label>
-                    <div className="input-password-wrapper">
-                      <input
-                        type={modalShowPwd ? 'text' : 'password'}
-                        className="input-control"
-                        placeholder="Min 6 characters"
-                        value={modalNewPwd}
-                        onChange={(e) => setModalNewPwd(e.target.value)}
-                      />
-                      <button
-                        type="button"
-                        className="btn-toggle-eye"
-                        onClick={() => setModalShowPwd(!modalShowPwd)}
-                      >
-                        {modalShowPwd ? <EyeOff size={15} /> : <Eye size={15} />}
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="form-group" style={{ width: '100%' }}>
-                    <label>Confirm New Password</label>
-                    <input
-                      type={modalShowPwd ? 'text' : 'password'}
-                      className="input-control"
-                      placeholder="Re-enter new password"
-                      value={modalConfirmPwd}
-                      onChange={(e) => setModalConfirmPwd(e.target.value)}
-                    />
-                  </div>
-
-                  {pwdOtpError && (
-                    <div className="otp-error-banner animate-fade-in">
-                      <AlertTriangle size={14} />
-                      <span>{pwdOtpError}</span>
-                    </div>
-                  )}
-
-                  <div className="otp-resend-row">
-                    {pwdResendCountdown > 0 ? (
-                      <span className="text-xs text-muted">
-                        Resend code in <strong>{pwdResendCountdown}s</strong>
-                      </span>
-                    ) : (
-                      <button
-                        type="button"
-                        className="btn-resend-link"
-                        onClick={handleSendPwdOtp}
-                      >
-                        <RefreshCw size={13} />
-                        <span>Resend Code</span>
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                <div className="modal-actions" style={{ justifyContent: 'space-between', marginTop: 'var(--space-4)' }}>
-                  <button
-                    type="button"
-                    className="btn btn-secondary btn-sm"
-                    onClick={() => setPwdStep(1)}
-                  >
-                    Back
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isResettingPwd || pwdEnteredOtp.length !== 6 || !modalNewPwd}
-                    className="btn btn-primary"
-                  >
-                    <Check size={15} />
-                    <span>{isResettingPwd ? 'Updating...' : 'Confirm & Update Password'}</span>
-                  </button>
-                </div>
-              </form>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Account Deletion Dialog Box with Email OTP Verification */}
+      {/* Account Deletion Dialog Box with Email Identity Confirmation */}
       {showDeleteModal && (
         <div className="modal-overlay">
           <div className="modal-content animate-fade-in delete-account-dialog">
@@ -1119,7 +848,7 @@ export default function SettingsPage() {
                 </div>
                 <div>
                   <h3>Delete Account &amp; All Data</h3>
-                  <span className="text-xs text-muted">Step {deleteStep} of 2: Identity Verification</span>
+                  <span className="text-xs text-muted">Confirm Identity to Proceed</span>
                 </div>
               </div>
               <button
@@ -1131,126 +860,63 @@ export default function SettingsPage() {
               </button>
             </div>
 
-            {deleteStep === 1 ? (
-              /* Step 1: Request & Send OTP to Email */
-              <div className="delete-step-container">
-                <div className="delete-warning-banner">
-                  <p className="text-sm font-bold text-danger">
-                    ⚠️ This action is permanent and cannot be undone!
-                  </p>
-                  <p className="text-xs text-secondary mt-1">
-                    Deleting your account will permanently wipe your profile, phone number, email registration, and all cloud &amp; local resumes from ResumeForge.
-                  </p>
-                </div>
-
-                <div className="otp-request-box">
-                  <div className="otp-request-info">
-                    <Mail size={18} className="text-emerald" />
-                    <div>
-                      <h4 className="text-sm font-bold">Email Security Verification</h4>
-                      <p className="text-xs text-muted">
-                        To authorize deletion, click below to generate and send a 6-digit security OTP to:
-                      </p>
-                      <span className="text-xs font-mono font-bold text-emerald">
-                        {profile.email || state.currentUser?.email || 'your registered email'}
-                      </span>
-                    </div>
-                  </div>
-
-                  <button
-                    type="button"
-                    className="btn btn-danger btn-send-otp"
-                    onClick={handleSendDeleteOtp}
-                  >
-                    <Send size={15} />
-                    <span>Send Verification OTP to Email</span>
-                  </button>
-                </div>
-
-                <div className="modal-actions" style={{ justifyContent: 'flex-end', marginTop: 'var(--space-4)' }}>
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    onClick={() => setShowDeleteModal(false)}
-                  >
-                    Cancel
-                  </button>
-                </div>
+            <div className="delete-step-container">
+              <div className="delete-warning-banner">
+                <p className="text-sm font-bold text-danger">
+                  ⚠️ This action is permanent and cannot be undone!
+                </p>
+                <p className="text-xs text-secondary mt-1">
+                  Permanently deletes your account, registered email address, phone number, claimed username (@{profile.username}), and all cloud-saved resumes.
+                </p>
               </div>
-            ) : (
-              /* Step 2: Enter 6-Digit OTP and Confirm Deletion */
-              <div className="delete-step-container">
-                <div className="otp-entry-box">
-                  <div className="otp-header-pill">
-                    <KeyRound size={16} className="text-emerald" />
-                    <span className="text-xs font-bold">6-Digit Security OTP Sent</span>
-                  </div>
 
-                  <p className="text-xs text-secondary text-center">
-                    Enter the 6-digit code sent to <strong>{profile.email || state.currentUser?.email}</strong>
-                  </p>
+              <div className="otp-request-box">
+                <p className="text-xs text-secondary">
+                  To confirm you own this account, please type your registered email address (<strong>{profile.email || state.currentUser?.email}</strong>) below:
+                </p>
 
-                  <div className="otp-input-center">
-                    <input
-                      type="text"
-                      maxLength={6}
-                      autoFocus
-                      placeholder="• • • • • •"
-                      className="input-control otp-code-field"
-                      value={enteredOtp}
-                      onChange={(e) => {
-                        const val = e.target.value.replace(/[^0-9]/g, '')
-                        setEnteredOtp(val)
-                        if (otpError) setOtpError('')
-                      }}
-                    />
-                  </div>
-
-                  {otpError && (
-                    <div className="otp-error-banner animate-fade-in">
-                      <AlertTriangle size={14} />
-                      <span>{otpError}</span>
-                    </div>
-                  )}
-
-                  <div className="otp-resend-row">
-                    {resendCountdown > 0 ? (
-                      <span className="text-xs text-muted">
-                        Resend OTP in <strong>{resendCountdown}s</strong>
-                      </span>
-                    ) : (
-                      <button
-                        type="button"
-                        className="btn-resend-link"
-                        onClick={handleSendDeleteOtp}
-                      >
-                        <RefreshCw size={13} />
-                        <span>Resend OTP Code</span>
-                      </button>
-                    )}
-                  </div>
+                <div className="form-group" style={{ width: '100%', marginTop: 'var(--space-2)' }}>
+                  <label>Type your email to confirm deletion</label>
+                  <input
+                    type="email"
+                    autoFocus
+                    placeholder={profile.email || state.currentUser?.email || 'name@example.com'}
+                    className="input-control font-mono"
+                    value={confirmEmailInput}
+                    onChange={(e) => {
+                      setConfirmEmailInput(e.target.value)
+                      if (deleteError) setDeleteError('')
+                    }}
+                  />
                 </div>
 
-                <div className="modal-actions" style={{ justifyContent: 'space-between', marginTop: 'var(--space-4)' }}>
-                  <button
-                    type="button"
-                    className="btn btn-secondary btn-sm"
-                    onClick={() => setDeleteStep(1)}
-                  >
-                    Back
-                  </button>
-                  <button
-                    type="button"
-                    disabled={isDeleting || enteredOtp.length !== 6}
-                    className="btn btn-danger"
-                    onClick={handleConfirmDeleteAccount}
-                  >
-                    <Trash2 size={15} />
-                    <span>{isDeleting ? 'Erasing Account & Data...' : 'Permanently Delete Account'}</span>
-                  </button>
-                </div>
+                {deleteError && (
+                  <div className="otp-error-banner animate-fade-in">
+                    <AlertTriangle size={14} />
+                    <span>{deleteError}</span>
+                  </div>
+                )}
               </div>
-            )}
+
+              <div className="modal-actions" style={{ justifyContent: 'flex-end', gap: 'var(--space-2)', marginTop: 'var(--space-4)' }}>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => setShowDeleteModal(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  disabled={isDeleting || !confirmEmailInput}
+                  className="btn btn-danger"
+                  onClick={handleConfirmDeleteAccount}
+                >
+                  <Trash2 size={15} />
+                  <span>{isDeleting ? 'Deleting Account...' : 'Permanently Delete Account'}</span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
