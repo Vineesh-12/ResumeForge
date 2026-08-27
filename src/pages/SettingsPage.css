@@ -277,3 +277,143 @@
 .text-emerald {
   color: #059669 !important;
 }
+
+/* Delete Account Dialog & OTP Workflow */
+.delete-account-dialog {
+  max-width: 480px;
+  width: 100%;
+}
+
+.modal-icon-danger {
+  background: #FEF2F2 !important;
+  border-color: #FECACA !important;
+  color: #DC2626 !important;
+}
+
+.btn-modal-close {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.btn-modal-close:hover {
+  background: #F1F5F9;
+  color: var(--text-primary);
+}
+
+.delete-step-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-top: var(--space-2);
+}
+
+.delete-warning-banner {
+  padding: var(--space-3);
+  background: #FEF2F2;
+  border: 1px solid #FECACA;
+  border-radius: var(--radius-md);
+}
+
+.otp-request-box {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  background: #F8FAFC;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+}
+
+.otp-request-info {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.btn-send-otp {
+  width: 100%;
+  padding: 0.65rem;
+  font-weight: 700;
+}
+
+.otp-entry-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: #F8FAFC;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+}
+
+.otp-header-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: #ECFDF5;
+  border: 1px solid #A7F3D0;
+  border-radius: var(--radius-full);
+}
+
+.otp-input-center {
+  width: 100%;
+  max-width: 240px;
+}
+
+.otp-code-field {
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 1.4rem;
+  font-weight: 800;
+  letter-spacing: 0.35em;
+  padding: 0.65rem 0.5rem;
+  border: 2px solid var(--accent-primary);
+  background: #FFFFFF;
+}
+
+.otp-error-banner {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #DC2626;
+  background: #FEF2F2;
+  border: 1px solid #FECACA;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  width: 100%;
+}
+
+.otp-resend-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 4px;
+}
+
+.btn-resend-link {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: none;
+  border: none;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--accent-primary);
+  cursor: pointer;
+  transition: opacity var(--transition-fast);
+}
+
+.btn-resend-link:hover {
+  text-decoration: underline;
+  opacity: 0.85;
+}

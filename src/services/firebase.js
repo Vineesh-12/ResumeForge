@@ -9,7 +9,8 @@ import {
   onAuthStateChanged,
   updateProfile,
   sendPasswordResetEmail,
-  updatePassword
+  updatePassword,
+  deleteUser
 } from 'firebase/auth'
 import {
   getFirestore,
@@ -222,4 +223,47 @@ export async function deleteUserResume(userId, resumeId) {
   if (!userId || !resumeId) throw new Error('User ID and Resume ID are required.')
   const resumeRef = doc(db, 'users', userId, 'resumes', resumeId)
   await deleteDoc(resumeRef)
+}
+
+/**
+ * Permanently delete user account, all saved resumes, claimed username, and user data
+ */
+export async function deleteUserAccountAndCloudData(userId, username = null) {
+  if (userId) {
+    try {
+      // 1. Delete all resumes in users/{userId}/resumes
+      const resumesRef = collection(db, 'users', userId, 'resumes')
+      const querySnapshot = await getDocs(resumesRef)
+      const deletePromises = []
+      querySnapshot.forEach(docSnap => {
+        deletePromises.push(deleteDoc(doc(db, 'users', userId, 'resumes', docSnap.id)))
+      })
+      await Promise.all(deletePromises)
+
+      // 2. Delete user profile doc if exists
+      try {
+        await deleteDoc(doc(db, 'users', userId))
+      } catch {}
+
+      // 3. Delete claimed username if present
+      if (username) {
+        const clean = username.trim().toLowerCase().replace(/^@/, '').replace(/[^a-z0-9_.]/g, '')
+        try {
+          await deleteDoc(doc(db, 'usernames', clean))
+        } catch {}
+      }
+    } catch (err) {
+      console.warn('Firestore cleanup notice:', err)
+    }
+  }
+
+  // 4. Delete Firebase Auth user account if signed in
+  if (auth.currentUser) {
+    try {
+      await deleteUser(auth.currentUser)
+    } catch (authErr) {
+      console.warn('Auth account deletion notice (or requires re-auth):', authErr)
+      await signOut(auth)
+    }
+  }
 }

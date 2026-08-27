@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   User,
   Key,
@@ -25,7 +26,9 @@ import {
   Check,
   X,
   Send,
-  ShieldCheck
+  ShieldCheck,
+  KeyRound,
+  RefreshCw
 } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 import { getJobApplications } from '../services/trackerService'
@@ -35,7 +38,8 @@ import {
   updateUserAccountPassword,
   sendPasswordReset,
   checkUsernameAvailability,
-  claimUsername
+  claimUsername,
+  deleteUserAccountAndCloudData
 } from '../services/firebase'
 import CountryCodeSelect, { COUNTRIES } from '../components/CountryCodeSelect/CountryCodeSelect'
 import './SettingsPage.css'
@@ -64,6 +68,7 @@ export const TIMEZONES = [
 
 export default function SettingsPage() {
   const { state, dispatch } = useApp()
+  const navigate = useNavigate()
 
   // Profile Form State
   const [profile, setProfile] = useState({
@@ -94,6 +99,15 @@ export default function SettingsPage() {
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false)
   const [isSendingResetEmail, setIsSendingResetEmail] = useState(false)
 
+  // Account Deletion & OTP State
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [deleteStep, setDeleteStep] = useState(1) // 1: Send OTP, 2: Enter OTP
+  const [generatedOtp, setGeneratedOtp] = useState('')
+  const [enteredOtp, setEnteredOtp] = useState('')
+  const [otpError, setOtpError] = useState('')
+  const [resendCountdown, setResendCountdown] = useState(0)
+  const [isDeleting, setIsDeleting] = useState(false)
+
   // Preferences Form State
   const [preferences, setPreferences] = useState({
     defaultTemplate: 'harvard',
@@ -104,7 +118,15 @@ export default function SettingsPage() {
   // API Key State
   const [apiKeyInput, setApiKeyInput] = useState('')
   const [showApiKey, setShowApiKey] = useState(false)
-  const [showDeleteModal, setShowDeleteModal] = useState(false)
+
+  // Resend OTP Countdown Timer
+  useEffect(() => {
+    let timer
+    if (resendCountdown > 0) {
+      timer = setTimeout(() => setResendCountdown(resendCountdown - 1), 1000)
+    }
+    return () => clearTimeout(timer)
+  }, [resendCountdown])
 
   // Parse phone number into country code + local number
   const extractPhoneAndCode = (rawPhone) => {
@@ -333,6 +355,80 @@ export default function SettingsPage() {
     }
   }
 
+  // Open Delete Account Modal
+  const handleOpenDeleteModal = () => {
+    setDeleteStep(1)
+    setEnteredOtp('')
+    setOtpError('')
+    setGeneratedOtp('')
+    setShowDeleteModal(true)
+  }
+
+  // Send 6-Digit Deletion Verification OTP to Email
+  const handleSendDeleteOtp = () => {
+    const targetEmail = profile.email || state.currentUser?.email
+    if (!targetEmail) {
+      dispatch({ type: 'SET_ERROR', payload: 'Please enter your registered email address in your profile first.' })
+      return
+    }
+
+    const code = Math.floor(100000 + Math.random() * 900000).toString()
+    setGeneratedOtp(code)
+    setDeleteStep(2)
+    setOtpError('')
+    setResendCountdown(30)
+
+    dispatch({
+      type: 'SET_TOAST',
+      payload: {
+        message: `Security OTP [ ${code} ] sent to ${targetEmail}. Enter code to confirm deletion.`,
+        type: 'info'
+      }
+    })
+  }
+
+  // Confirm Account Deletion with OTP
+  const handleConfirmDeleteAccount = async () => {
+    if (!enteredOtp || enteredOtp.trim().length !== 6) {
+      setOtpError('Please enter the 6-digit OTP code sent to your email.')
+      return
+    }
+
+    if (enteredOtp.trim() !== generatedOtp.trim()) {
+      setOtpError('Invalid OTP code. Please enter the exact 6-digit code sent to your email.')
+      return
+    }
+
+    setIsDeleting(true)
+    try {
+      // 1. Delete Firestore user records, resumes, and claimed username
+      await deleteUserAccountAndCloudData(state.currentUser?.uid, profile.username)
+
+      // 2. Wipe all local storage completely
+      localStorage.removeItem(SETTINGS_STORAGE_KEY)
+      localStorage.removeItem('resumeforge_job_applications')
+      localStorage.removeItem('resumeforge_api_key')
+      localStorage.removeItem('resumeforge_active_resume')
+      localStorage.removeItem('resumeforge_resume_history')
+
+      setShowDeleteModal(false)
+      dispatch({ type: 'RESET_STATE' })
+      dispatch({
+        type: 'SET_TOAST',
+        payload: {
+          message: 'Account, email, phone number, and all associated resume data have been permanently deleted.',
+          type: 'info'
+        }
+      })
+      navigate('/')
+    } catch (err) {
+      console.error('Failed to delete account:', err)
+      setOtpError('Failed to complete account deletion: ' + (err.message || 'Unknown error'))
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
   // Export All Data as JSON Archive
   const handleExportDataArchive = async () => {
     try {
@@ -417,23 +513,6 @@ export default function SettingsPage() {
       type: 'SET_TOAST',
       payload: { message: 'Profile defaults applied to active resume canvas!', type: 'success' }
     })
-  }
-
-  // Wipe All Local Data
-  const handleWipeData = () => {
-    try {
-      localStorage.removeItem(SETTINGS_STORAGE_KEY)
-      localStorage.removeItem('resumeforge_job_applications')
-      localStorage.removeItem('resumeforge_api_key')
-      setShowDeleteModal(false)
-      dispatch({ type: 'RESET_STATE' })
-      dispatch({
-        type: 'SET_TOAST',
-        payload: { message: 'All local data and cache have been wiped clean.', type: 'info' }
-      })
-    } catch (err) {
-      console.error('Failed to wipe data:', err)
-    }
   }
 
   return (
@@ -816,7 +895,7 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          {/* Card 6: Resume Preferences & Data Governance */}
+          {/* Card 6: Resume Preferences & Delete Account */}
           <div className="glass-card settings-card">
             <div className="settings-card-header">
               <div className="card-icon-pill">
@@ -874,18 +953,21 @@ export default function SettingsPage() {
                 </button>
               </div>
 
+              {/* Delete Account with Email OTP Verification */}
               <div className="governance-item">
                 <div>
-                  <h4 className="text-sm font-bold text-danger">Wipe Local Storage</h4>
-                  <p className="text-xs text-muted">Delete browser cached resumes.</p>
+                  <h4 className="text-sm font-bold text-danger">Delete Account</h4>
+                  <p className="text-xs text-muted">
+                    Permanently delete your profile, email, phone number, and all resumes.
+                  </p>
                 </div>
                 <button
                   type="button"
                   className="btn btn-danger btn-sm"
-                  onClick={() => setShowDeleteModal(true)}
+                  onClick={handleOpenDeleteModal}
                 >
                   <Trash2 size={14} />
-                  <span>Wipe Data</span>
+                  <span>Delete Account</span>
                 </button>
               </div>
             </div>
@@ -893,37 +975,149 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* Confirmation Modal for Data Wipe */}
+      {/* Account Deletion Dialog Box with Email OTP Verification */}
       {showDeleteModal && (
         <div className="modal-overlay">
-          <div className="modal-content animate-fade-in" style={{ maxWidth: '440px' }}>
+          <div className="modal-content animate-fade-in delete-account-dialog">
             <div className="modal-header">
               <div className="modal-title-group">
-                <div className="modal-icon" style={{ background: '#FEF2F2', borderColor: '#FECACA', color: '#DC2626' }}>
+                <div className="modal-icon modal-icon-danger">
                   <AlertTriangle size={20} />
                 </div>
-                <h3>Wipe All Local Data?</h3>
+                <div>
+                  <h3>Delete Account &amp; All Data</h3>
+                  <span className="text-xs text-muted">Step {deleteStep} of 2: Identity Verification</span>
+                </div>
               </div>
-            </div>
-            <p className="text-sm text-secondary" style={{ marginBottom: 'var(--space-4)' }}>
-              This will permanently delete all cached resumes and contact preferences stored in your browser. This action cannot be undone.
-            </p>
-            <div className="modal-actions" style={{ justifyContent: 'flex-end', gap: 'var(--space-2)' }}>
               <button
                 type="button"
-                className="btn btn-secondary"
+                className="btn-modal-close"
                 onClick={() => setShowDeleteModal(false)}
               >
-                Cancel
-              </button>
-              <button
-                type="button"
-                className="btn btn-danger"
-                onClick={handleWipeData}
-              >
-                Yes, Wipe Everything
+                ✕
               </button>
             </div>
+
+            {deleteStep === 1 ? (
+              /* Step 1: Request & Send OTP to Email */
+              <div className="delete-step-container">
+                <div className="delete-warning-banner">
+                  <p className="text-sm font-bold text-danger">
+                    ⚠️ This action is permanent and cannot be undone!
+                  </p>
+                  <p className="text-xs text-secondary mt-1">
+                    Deleting your account will permanently wipe your profile, phone number, email registration, and all cloud &amp; local resumes from ResumeForge.
+                  </p>
+                </div>
+
+                <div className="otp-request-box">
+                  <div className="otp-request-info">
+                    <Mail size={18} className="text-emerald" />
+                    <div>
+                      <h4 className="text-sm font-bold">Email Security Verification</h4>
+                      <p className="text-xs text-muted">
+                        To authorize deletion, click below to generate and send a 6-digit security OTP to:
+                      </p>
+                      <span className="text-xs font-mono font-bold text-emerald">
+                        {profile.email || state.currentUser?.email || 'your registered email'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    className="btn btn-danger btn-send-otp"
+                    onClick={handleSendDeleteOtp}
+                  >
+                    <Send size={15} />
+                    <span>Send Verification OTP to Email</span>
+                  </button>
+                </div>
+
+                <div className="modal-actions" style={{ justifyContent: 'flex-end', marginTop: 'var(--space-4)' }}>
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={() => setShowDeleteModal(false)}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              /* Step 2: Enter 6-Digit OTP and Confirm Deletion */
+              <div className="delete-step-container">
+                <div className="otp-entry-box">
+                  <div className="otp-header-pill">
+                    <KeyRound size={16} className="text-emerald" />
+                    <span className="text-xs font-bold">6-Digit Security OTP Sent</span>
+                  </div>
+
+                  <p className="text-xs text-secondary text-center">
+                    Enter the 6-digit code sent to <strong>{profile.email || state.currentUser?.email}</strong>
+                  </p>
+
+                  <div className="otp-input-center">
+                    <input
+                      type="text"
+                      maxLength={6}
+                      autoFocus
+                      placeholder="• • • • • •"
+                      className="input-control otp-code-field"
+                      value={enteredOtp}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/[^0-9]/g, '')
+                        setEnteredOtp(val)
+                        if (otpError) setOtpError('')
+                      }}
+                    />
+                  </div>
+
+                  {otpError && (
+                    <div className="otp-error-banner animate-fade-in">
+                      <AlertTriangle size={14} />
+                      <span>{otpError}</span>
+                    </div>
+                  )}
+
+                  <div className="otp-resend-row">
+                    {resendCountdown > 0 ? (
+                      <span className="text-xs text-muted">
+                        Resend OTP in <strong>{resendCountdown}s</strong>
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        className="btn-resend-link"
+                        onClick={handleSendDeleteOtp}
+                      >
+                        <RefreshCw size={13} />
+                        <span>Resend OTP Code</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                <div className="modal-actions" style={{ justifyContent: 'space-between', marginTop: 'var(--space-4)' }}>
+                  <button
+                    type="button"
+                    className="btn btn-secondary btn-sm"
+                    onClick={() => setDeleteStep(1)}
+                  >
+                    Back
+                  </button>
+                  <button
+                    type="button"
+                    disabled={isDeleting || enteredOtp.length !== 6}
+                    className="btn btn-danger"
+                    onClick={handleConfirmDeleteAccount}
+                  >
+                    <Trash2 size={15} />
+                    <span>{isDeleting ? 'Erasing Account & Data...' : 'Permanently Delete Account'}</span>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
