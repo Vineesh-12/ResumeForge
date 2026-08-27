@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
 import {
   FileUp,
@@ -10,13 +10,15 @@ import {
   Check,
   ShieldCheck,
   User,
-  Cloud,
   LogOut,
   FolderOpen,
   Briefcase,
   Layers,
   Settings as SettingsIcon,
-  Sparkles
+  Sparkles,
+  ChevronDown,
+  Lock,
+  ExternalLink
 } from 'lucide-react'
 import { useApp } from '../../context/AppContext'
 import { signOutUser } from '../../services/firebase'
@@ -34,11 +36,25 @@ export default function Header() {
   const { state, dispatch } = useApp()
   const navigate = useNavigate()
   const location = useLocation()
+  
   const [showDiffModal, setShowDiffModal] = useState(false)
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
+  const profileMenuRef = useRef(null)
 
   const isWizardRoute = ['/app', '/analyze', '/tailor', '/export'].includes(location.pathname)
   const currentStepObj = STEPS.find(s => s.path === location.pathname) || STEPS[0]
   const currentStep = currentStepObj.id
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleOutsideClick = (e) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(e.target)) {
+        setIsProfileMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleOutsideClick)
+    return () => document.removeEventListener('mousedown', handleOutsideClick)
+  }, [])
 
   const handleStepClick = (step) => {
     if (step.id === 1 || state.completedSteps[step.id] || step.id <= currentStep) {
@@ -54,10 +70,12 @@ export default function Header() {
   }
 
   const handleOpenAuth = () => {
+    setIsProfileMenuOpen(false)
     dispatch({ type: 'TOGGLE_AUTH_MODAL', payload: true })
   }
 
   const handleOpenDashboard = () => {
+    setIsProfileMenuOpen(false)
     if (!state.currentUser) {
       dispatch({ type: 'TOGGLE_AUTH_MODAL', payload: true })
     } else {
@@ -65,7 +83,18 @@ export default function Header() {
     }
   }
 
+  const handleOpenApiKeyModal = () => {
+    setIsProfileMenuOpen(false)
+    dispatch({ type: 'TOGGLE_API_KEY_MODAL', payload: true })
+  }
+
+  const handleNavigateToSettings = () => {
+    setIsProfileMenuOpen(false)
+    navigate('/settings')
+  }
+
   const handleSignOut = async () => {
+    setIsProfileMenuOpen(false)
     try {
       await signOutUser()
       dispatch({
@@ -77,15 +106,13 @@ export default function Header() {
     }
   }
 
-  const activeResume = state.tailoredResume || state.resumeParsed
   const isTrackerActive = location.pathname === '/tracker'
-  const isSettingsActive = location.pathname === '/settings'
 
   return (
     <>
       <header className="site-header glass-card">
         <div className="header-container">
-          {/* Brand Logo */}
+          {/* FAR LEFT: Brand Logo */}
           <div className="brand-section" onClick={() => navigate('/')}>
             <div className="brand-icon">
               <ShieldCheck size={22} className="brand-svg" />
@@ -99,7 +126,7 @@ export default function Header() {
             </div>
           </div>
 
-          {/* Stepper Navigation (Active during Resume Optimization Workflow) */}
+          {/* CENTER: Navigation (Wizard Stepper or Clean 2-Link Menu) */}
           {isWizardRoute ? (
             <nav className="stepper-nav" aria-label="Progress Tracker">
               {STEPS.map((step, idx) => {
@@ -149,40 +176,12 @@ export default function Header() {
                 <Briefcase size={15} />
                 <span>Job Tracker</span>
               </Link>
-              <Link to="/settings" className={`nav-link-item ${isSettingsActive ? 'nav-active' : ''}`}>
-                <SettingsIcon size={15} />
-                <span>Profile &amp; Settings</span>
-              </Link>
             </div>
           )}
 
-          {/* Header Right Actions */}
+          {/* FAR RIGHT: Consolidated Action Hub & Profile Dropdown */}
           <div className="header-actions">
-            {/* If on landing/settings, show direct CTA */}
-            {!isWizardRoute && (
-              <button
-                type="button"
-                className="btn btn-primary btn-sm header-cta-pill"
-                onClick={() => navigate('/app')}
-              >
-                <span>Optimize Resume</span>
-              </button>
-            )}
-
-            {/* Job Tracker Button (when inside wizard) */}
-            {isWizardRoute && (
-              <button
-                type="button"
-                className={`btn-header-tracker ${isTrackerActive ? 'tracker-active' : ''}`}
-                onClick={() => navigate('/tracker')}
-                title="Open Kanban Job Application Tracker"
-              >
-                <Briefcase size={14} />
-                <span className="header-btn-text">Job Tracker</span>
-              </button>
-            )}
-
-            {/* Score Diff Comparison Button */}
+            {/* Diff Tool Button (Only appears when viewing tailored version in wizard) */}
             {state.tailoredResume && isWizardRoute && (
               <button
                 type="button"
@@ -195,97 +194,7 @@ export default function Header() {
               </button>
             )}
 
-            {/* Cloud "My Resumes" Button */}
-            <button
-              type="button"
-              className="btn-header-cloud"
-              onClick={handleOpenDashboard}
-              title={state.currentUser ? 'Open My Saved Resumes Dashboard' : 'Sign in to view saved resumes'}
-            >
-              <FolderOpen size={14} />
-              <span className="header-btn-text">
-                My Resumes {state.userResumes.length > 0 ? `(${state.userResumes.length})` : ''}
-              </span>
-            </button>
-
-            {/* Quick "Save to Cloud" Button */}
-            {activeResume && (
-              <button
-                type="button"
-                className="btn-header-save"
-                onClick={handleOpenDashboard}
-                title="Save current resume to cloud"
-              >
-                <Cloud size={14} />
-                <span className="header-btn-text">Save</span>
-              </button>
-            )}
-
-            {/* Settings Quick Icon */}
-            <button
-              type="button"
-              className={`btn-header-settings ${isSettingsActive ? 'settings-active' : ''}`}
-              onClick={() => navigate('/settings')}
-              title="Account & Profile Settings"
-            >
-              <SettingsIcon size={15} />
-            </button>
-
-            {/* User Auth Chip */}
-            {state.currentUser ? (
-              <div className="user-profile-menu">
-                <div
-                  className="user-chip"
-                  onClick={() => navigate('/settings')}
-                  title={`Logged in as ${state.currentUser.email} (Click to open Settings)`}
-                  style={{ cursor: 'pointer' }}
-                >
-                  <div className="user-avatar-mini">
-                    {state.currentUser.displayName ? (
-                      state.currentUser.displayName.charAt(0).toUpperCase()
-                    ) : (
-                      <User size={13} />
-                    )}
-                  </div>
-                  <span className="user-chip-name">
-                    {state.currentUser.displayName || state.currentUser.email.split('@')[0]}
-                  </span>
-                </div>
-                <button
-                  type="button"
-                  className="btn-logout"
-                  onClick={handleSignOut}
-                  title="Log out of account"
-                >
-                  <LogOut size={14} />
-                </button>
-              </div>
-            ) : (
-              <button
-                type="button"
-                className="btn-header-signin"
-                onClick={handleOpenAuth}
-              >
-                <User size={14} />
-                <span>Sign In</span>
-              </button>
-            )}
-
-            {/* API Key Status & Config Trigger */}
-            <button
-              type="button"
-              className={`btn-api-key ${state.apiKey ? 'api-active' : 'api-missing'}`}
-              onClick={() => dispatch({ type: 'TOGGLE_API_KEY_MODAL', payload: true })}
-              title={state.apiKey ? 'Gemini API Key Connected (Click to change)' : 'Set Gemini API Key'}
-            >
-              <KeyRound size={14} />
-              <span className="api-key-text">
-                {state.apiKey ? 'AI Ready' : 'Set API Key'}
-              </span>
-              <span className="api-status-dot" />
-            </button>
-
-            {/* Reset / New Resume Button */}
+            {/* Reset / New Resume Button (Inside wizard only) */}
             {(state.resumeFile || state.jobDescription) && isWizardRoute && (
               <button
                 type="button"
@@ -296,6 +205,153 @@ export default function Header() {
                 <RotateCcw size={14} />
               </button>
             )}
+
+            {/* Consolidated Profile Hub Dropdown */}
+            <div className="profile-hub-wrapper" ref={profileMenuRef}>
+              {state.currentUser ? (
+                <button
+                  type="button"
+                  className={`user-profile-trigger ${isProfileMenuOpen ? 'active' : ''}`}
+                  onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                  title="Open Profile & Settings Menu"
+                >
+                  <div className="user-avatar-mini">
+                    {state.currentUser.displayName ? (
+                      state.currentUser.displayName.charAt(0).toUpperCase()
+                    ) : (
+                      <User size={13} />
+                    )}
+                  </div>
+                  <span className="user-profile-name">
+                    {state.currentUser.displayName || state.currentUser.email.split('@')[0]}
+                  </span>
+                  <ChevronDown size={14} className={`chevron-icon ${isProfileMenuOpen ? 'chevron-rotated' : ''}`} />
+                </button>
+              ) : (
+                <div className="guest-profile-group">
+                  <button
+                    type="button"
+                    className="btn-header-signin"
+                    onClick={handleOpenAuth}
+                  >
+                    <User size={14} />
+                    <span>Sign In</span>
+                  </button>
+                  <button
+                    type="button"
+                    className={`btn-guest-menu-toggle ${isProfileMenuOpen ? 'active' : ''}`}
+                    onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                    title="Open Quick Settings"
+                  >
+                    <ChevronDown size={14} className={`chevron-icon ${isProfileMenuOpen ? 'chevron-rotated' : ''}`} />
+                  </button>
+                </div>
+              )}
+
+              {/* Dropdown Menu Popup */}
+              {isProfileMenuOpen && (
+                <div className="profile-dropdown-menu animate-fade-in">
+                  {state.currentUser && (
+                    <div className="dropdown-user-header">
+                      <div className="dropdown-avatar">
+                        {state.currentUser.displayName ? (
+                          state.currentUser.displayName.charAt(0).toUpperCase()
+                        ) : (
+                          <User size={18} />
+                        )}
+                      </div>
+                      <div className="dropdown-user-info">
+                        <span className="dropdown-user-name">
+                          {state.currentUser.displayName || 'Candidate'}
+                        </span>
+                        <span className="dropdown-user-email">
+                          {state.currentUser.email}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="dropdown-items-stack">
+                    {/* Item 1: Profile & Settings */}
+                    <button
+                      type="button"
+                      className="dropdown-item-btn"
+                      onClick={handleNavigateToSettings}
+                    >
+                      <div className="dropdown-item-icon">
+                        <SettingsIcon size={16} />
+                      </div>
+                      <div className="dropdown-item-text">
+                        <span>Profile &amp; Settings</span>
+                        <small>Contact defaults &amp; templates</small>
+                      </div>
+                    </button>
+
+                    {/* Item 2: My Saved Resumes */}
+                    <button
+                      type="button"
+                      className="dropdown-item-btn"
+                      onClick={handleOpenDashboard}
+                    >
+                      <div className="dropdown-item-icon">
+                        <FolderOpen size={16} />
+                      </div>
+                      <div className="dropdown-item-text">
+                        <span>My Resumes</span>
+                        <small>
+                          {state.userResumes.length > 0
+                            ? `${state.userResumes.length} saved in cloud`
+                            : 'Cloud backup storage'}
+                        </small>
+                      </div>
+                    </button>
+
+                    {/* Item 3: Gemini AI Engine Status */}
+                    <button
+                      type="button"
+                      className="dropdown-item-btn"
+                      onClick={handleOpenApiKeyModal}
+                    >
+                      <div className="dropdown-item-icon">
+                        <KeyRound size={16} />
+                      </div>
+                      <div className="dropdown-item-text">
+                        <div className="dropdown-row-flex">
+                          <span>AI Engine Key</span>
+                          <span className={`badge-api-chip ${state.apiKey ? 'chip-active' : 'chip-missing'}`}>
+                            {state.apiKey ? 'Ready' : 'Set Key'}
+                          </span>
+                        </div>
+                        <small>Google Gemini 2.5 Flash</small>
+                      </div>
+                    </button>
+                  </div>
+
+                  {/* Sign Out / Sign In Footer */}
+                  <div className="dropdown-footer">
+                    {state.currentUser ? (
+                      <button
+                        type="button"
+                        className="dropdown-logout-btn"
+                        onClick={handleSignOut}
+                      >
+                        <LogOut size={15} />
+                        <span>Sign Out</span>
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        className="dropdown-signin-btn"
+                        onClick={handleOpenAuth}
+                      >
+                        <User size={15} />
+                        <span>Sign In with Google / Email</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </header>
