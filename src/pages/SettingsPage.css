@@ -1,7 +1,7 @@
 .settings-page-container {
   max-width: 1100px;
   margin: 0 auto;
-  padding: var(--space-8) var(--space-6);
+  padding: var(--space-8) var(--space-6) var(--space-12) var(--space-6);
   display: flex;
   flex-direction: column;
   gap: var(--space-6);
@@ -36,6 +36,11 @@
   flex-shrink: 0;
 }
 
+.btn-save-top {
+  padding: 0.55rem 1.25rem;
+  font-weight: 700;
+}
+
 .settings-grid {
   display: grid;
   grid-template-columns: 1fr 380px;
@@ -65,6 +70,11 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
+  transition: border-color var(--transition-fast);
+}
+
+.settings-card:hover {
+  border-color: #CBD5E1;
 }
 
 .settings-card-header {
@@ -100,18 +110,61 @@
   }
 }
 
+/* Username input with @ prefix and availability status */
+.label-with-action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.badge-status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.675rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+}
+
+.chip-success {
+  background: #ECFDF5;
+  color: #065F46;
+  border: 1px solid #A7F3D0;
+}
+
+.chip-danger {
+  background: #FEF2F2;
+  color: #991B1B;
+  border: 1px solid #FECACA;
+}
+
+.input-with-prefix {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.input-prefix {
+  position: absolute;
+  left: 12px;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.input-prefixed {
+  padding-left: 28px !important;
+  font-family: var(--font-mono);
+}
+
 /* Combined Country Code + Phone Number Input */
 .phone-input-combo {
   display: flex;
   align-items: center;
   gap: 6px;
-}
-
-.country-code-select {
-  width: 130px;
-  flex-shrink: 0;
-  font-size: 0.825rem;
-  padding: 0.55rem 0.5rem;
 }
 
 .phone-number-input {
@@ -124,6 +177,45 @@
   justify-content: flex-end;
   padding-top: var(--space-3);
   border-top: 1px solid var(--glass-border);
+}
+
+/* Account Security & Password */
+.security-panel-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.provider-status-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0.5rem 0.75rem;
+  background: #F8FAFC;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+}
+
+.security-action-box {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: #F8FAFC;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+}
+
+.password-change-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.btn-update-pwd {
+  width: fit-content;
+  align-self: flex-start;
+  margin-top: 4px;
 }
 
 /* API Key Panel */
@@ -180,4 +272,8 @@
 
 .text-danger {
   color: #DC2626 !important;
+}
+
+.text-emerald {
+  color: #059669 !important;
 }

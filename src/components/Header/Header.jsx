@@ -103,6 +103,32 @@ export default function Header() {
     }
   }
 
+  const getHeaderDisplayName = () => {
+    try {
+      const stored = localStorage.getItem('resumeforge_user_settings')
+      if (stored) {
+        const parsed = JSON.parse(stored)
+        if (parsed.profile?.fullName) {
+          return parsed.profile.fullName.toUpperCase()
+        }
+      }
+    } catch {}
+
+    if (state.currentUser?.displayName) {
+      return state.currentUser.displayName.toUpperCase()
+    }
+    if (state.resumeParsed?.name) {
+      return state.resumeParsed.name.toUpperCase()
+    }
+    if (state.currentUser?.email) {
+      return state.currentUser.email.split('@')[0].toUpperCase()
+    }
+    return 'VINEESH REDDY'
+  }
+
+  const headerDisplayName = getHeaderDisplayName()
+  const avatarInitial = headerDisplayName.charAt(0).toUpperCase()
+
   return (
     <>
       <header className="site-header glass-card">
@@ -204,14 +230,10 @@ export default function Header() {
                   title="Open Profile & Settings Menu"
                 >
                   <div className="user-avatar-mini">
-                    {state.currentUser.displayName ? (
-                      state.currentUser.displayName.charAt(0).toUpperCase()
-                    ) : (
-                      <User size={13} />
-                    )}
+                    {avatarInitial}
                   </div>
                   <span className="user-profile-name">
-                    {state.currentUser.displayName || state.currentUser.email.split('@')[0]}
+                    {headerDisplayName}
                   </span>
                   <ChevronDown size={14} className={`chevron-icon ${isProfileMenuOpen ? 'chevron-rotated' : ''}`} />
                 </button>

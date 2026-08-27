@@ -7,12 +7,15 @@ import {
   GoogleAuthProvider,
   signOut,
   onAuthStateChanged,
-  updateProfile
+  updateProfile,
+  sendPasswordResetEmail,
+  updatePassword
 } from 'firebase/auth'
 import {
   getFirestore,
   collection,
   doc,
+  getDoc,
   setDoc,
   getDocs,
   deleteDoc,
@@ -75,6 +78,74 @@ export async function signOutUser() {
 }
 
 /**
+ * Send password reset email / OTP link
+ */
+export async function sendPasswordReset(email) {
+  if (!email) throw new Error('Please provide a valid email address.')
+  await sendPasswordResetEmail(auth, email)
+}
+
+/**
+ * Update user account password
+ */
+export async function updateUserAccountPassword(newPassword) {
+  if (!auth.currentUser) throw new Error('No user is currently signed in.')
+  await updatePassword(auth.currentUser, newPassword)
+}
+
+/**
+ * Update user display/profile name in Firebase Auth
+ */
+export async function updateUserProfileName(displayName) {
+  if (auth.currentUser) {
+    await updateProfile(auth.currentUser, { displayName })
+  }
+}
+
+/**
+ * Check if a unique @username is available across the platform
+ */
+export async function checkUsernameAvailability(username, currentUid = null) {
+  if (!username) return false
+  const clean = username.trim().toLowerCase().replace(/^@/, '').replace(/[^a-z0-9_.]/g, '')
+  if (clean.length < 3) return false
+
+  try {
+    const userDocRef = doc(db, 'usernames', clean)
+    const snap = await getDoc(userDocRef)
+    if (!snap.exists()) return true
+    // If it belongs to current user, it's available for them
+    const data = snap.data()
+    return currentUid && data.uid === currentUid
+  } catch {
+    // If offline/rules fallback, check local storage
+    const localTaken = localStorage.getItem(`rf_username_${clean}`)
+    return !localTaken || (currentUid && localTaken === currentUid)
+  }
+}
+
+/**
+ * Claim and reserve a unique username for a user
+ */
+export async function claimUsername(username, userId) {
+  if (!username || !userId) return false
+  const clean = username.trim().toLowerCase().replace(/^@/, '').replace(/[^a-z0-9_.]/g, '')
+  if (clean.length < 3) return false
+
+  try {
+    const userDocRef = doc(db, 'usernames', clean)
+    await setDoc(userDocRef, {
+      uid: userId,
+      claimedAt: serverTimestamp()
+    }, { merge: true })
+  } catch {
+    // Local fallback
+    localStorage.setItem(`rf_username_${clean}`, userId)
+  }
+  return true
+}
+
+/**
  * Subscribe to auth state changes
  */
 export function subscribeToAuthChanges(callback) {
@@ -85,11 +156,6 @@ export function subscribeToAuthChanges(callback) {
 
 /**
  * Save or update a resume in Firestore for the given user
- * @param {string} userId - Current user UID
- * @param {object} resumeData - Full resume object
- * @param {object} metadata - { title, targetRole, atsScore, atsGrade }
- * @param {string} [existingId] - Optional existing document ID
- * @returns {Promise<string>} Document ID
  */
 export async function saveResumeToCloud(userId, resumeData, metadata = {}, existingId = null) {
   if (!userId) throw new Error('User must be logged in to save resumes to cloud.')
@@ -118,8 +184,6 @@ export async function saveResumeToCloud(userId, resumeData, metadata = {}, exist
 
 /**
  * Fetch all saved resumes for a user
- * @param {string} userId 
- * @returns {Promise<Array>}
  */
 export async function getUserResumes(userId) {
   if (!userId) return []
@@ -138,7 +202,6 @@ export async function getUserResumes(userId) {
     })
     return resumes
   } catch (err) {
-    // If index or orderBy fails on new collections, fallback to unsorted getDocs
     console.warn('Ordered query failed, falling back to simple collection fetch:', err)
     const querySnapshot = await getDocs(resumesRef)
     const resumes = []
@@ -154,8 +217,6 @@ export async function getUserResumes(userId) {
 
 /**
  * Delete a specific resume for a user
- * @param {string} userId 
- * @param {string} resumeId 
  */
 export async function deleteUserResume(userId, resumeId) {
   if (!userId || !resumeId) throw new Error('User ID and Resume ID are required.')

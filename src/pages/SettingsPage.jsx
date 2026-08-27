@@ -18,11 +18,25 @@ import {
   AlertTriangle,
   Globe,
   Clock,
-  Phone
+  Phone,
+  Lock,
+  Mail,
+  AtSign,
+  Check,
+  X,
+  Send,
+  ShieldCheck
 } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 import { getJobApplications } from '../services/trackerService'
-import { getUserResumes } from '../services/firebase'
+import {
+  getUserResumes,
+  updateUserProfileName,
+  updateUserAccountPassword,
+  sendPasswordReset,
+  checkUsernameAvailability,
+  claimUsername
+} from '../services/firebase'
 import CountryCodeSelect, { COUNTRIES } from '../components/CountryCodeSelect/CountryCodeSelect'
 import './SettingsPage.css'
 
@@ -54,6 +68,7 @@ export default function SettingsPage() {
   // Profile Form State
   const [profile, setProfile] = useState({
     fullName: '',
+    username: '',
     targetTitle: '',
     email: '',
     countryCode: '+91',
@@ -65,17 +80,30 @@ export default function SettingsPage() {
     website: ''
   })
 
+  // Username Availability State
+  const [usernameStatus, setUsernameStatus] = useState({
+    checking: false,
+    available: null,
+    message: ''
+  })
+
+  // Security / Password State
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false)
+  const [isSendingResetEmail, setIsSendingResetEmail] = useState(false)
+
   // Preferences Form State
   const [preferences, setPreferences] = useState({
-    defaultTemplate: 'harvard', // 'harvard' | 'tech' | 'executive' | 'modern'
-    paperFormat: 'letter',      // 'letter' | 'a4'
+    defaultTemplate: 'harvard',
+    paperFormat: 'letter',
     autoSaveEnabled: true
   })
 
   // API Key State
   const [apiKeyInput, setApiKeyInput] = useState('')
   const [showApiKey, setShowApiKey] = useState(false)
-  const [isSavedToast, setIsSavedToast] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
 
   // Parse phone number into country code + local number
@@ -102,26 +130,36 @@ export default function SettingsPage() {
         if (parsed.profile) {
           const phoneData = extractPhoneAndCode(parsed.profile.phone || '')
           setProfile({
-            ...parsed.profile,
+            fullName: parsed.profile.fullName || state.currentUser?.displayName || '',
+            username: parsed.profile.username || (state.currentUser?.email ? state.currentUser.email.split('@')[0].toLowerCase() : ''),
+            targetTitle: parsed.profile.targetTitle || '',
+            email: parsed.profile.email || state.currentUser?.email || '',
             countryCode: parsed.profile.countryCode || phoneData.code || '+91',
             phone: parsed.profile.phone ? phoneData.number : (parsed.profile.phone || ''),
-            timezone: parsed.profile.timezone || 'IST (UTC+5:30)'
+            location: parsed.profile.location || '',
+            timezone: parsed.profile.timezone || 'IST (UTC+5:30)',
+            linkedIn: parsed.profile.linkedIn || '',
+            github: parsed.profile.github || '',
+            website: parsed.profile.website || ''
           })
         }
         if (parsed.preferences) setPreferences(parsed.preferences)
-      } else if (state.resumeParsed) {
-        const phoneData = extractPhoneAndCode(state.resumeParsed.contact?.phone || '')
+      } else {
+        const phoneData = extractPhoneAndCode(state.resumeParsed?.contact?.phone || '')
+        const defaultName = state.currentUser?.displayName || state.resumeParsed?.name || ''
+        const defaultEmail = state.currentUser?.email || state.resumeParsed?.contact?.email || ''
         setProfile({
-          fullName: state.resumeParsed.name || '',
+          fullName: defaultName,
+          username: defaultEmail ? defaultEmail.split('@')[0].toLowerCase() : 'candidate',
           targetTitle: state.jdParsed?.jobTitle || '',
-          email: state.resumeParsed.contact?.email || state.currentUser?.email || '',
+          email: defaultEmail,
           countryCode: phoneData.code || '+91',
           phone: phoneData.number || '',
-          location: state.resumeParsed.contact?.location || '',
+          location: state.resumeParsed?.contact?.location || '',
           timezone: 'IST (UTC+5:30)',
-          linkedIn: state.resumeParsed.contact?.linkedIn || '',
-          github: state.resumeParsed.contact?.github || '',
-          website: state.resumeParsed.contact?.website || ''
+          linkedIn: state.resumeParsed?.contact?.linkedIn || '',
+          github: state.resumeParsed?.contact?.github || '',
+          website: state.resumeParsed?.contact?.website || ''
         })
       }
     } catch (err) {
@@ -133,15 +171,74 @@ export default function SettingsPage() {
     }
   }, [state.apiKey, state.currentUser])
 
+  // Check username uniqueness
+  const handleCheckUsername = async (inputVal) => {
+    const raw = inputVal !== undefined ? inputVal : profile.username
+    const clean = raw.trim().toLowerCase().replace(/^@/, '').replace(/[^a-z0-9_.]/g, '')
+    
+    if (clean.length < 3) {
+      setUsernameStatus({
+        checking: false,
+        available: false,
+        message: 'Username must be at least 3 characters long.'
+      })
+      return
+    }
+
+    setUsernameStatus({ checking: true, available: null, message: 'Checking availability...' })
+
+    try {
+      const isAvailable = await checkUsernameAvailability(clean, state.currentUser?.uid)
+      if (isAvailable) {
+        setUsernameStatus({
+          checking: false,
+          available: true,
+          message: `@${clean} is unique and available!`
+        })
+      } else {
+        setUsernameStatus({
+          checking: false,
+          available: false,
+          message: `@${clean} is already claimed by another user.`
+        })
+      }
+    } catch {
+      setUsernameStatus({ checking: false, available: true, message: `@${clean} is ready.` })
+    }
+  }
+
   // Save Settings
-  const handleSaveSettings = (e) => {
+  const handleSaveSettings = async (e) => {
     e?.preventDefault()
+
+    const cleanUsername = profile.username.trim().toLowerCase().replace(/^@/, '').replace(/[^a-z0-9_.]/g, '')
+
+    // Check username availability if entered
+    if (cleanUsername && cleanUsername.length >= 3) {
+      const isAvailable = await checkUsernameAvailability(cleanUsername, state.currentUser?.uid)
+      if (!isAvailable) {
+        dispatch({
+          type: 'SET_ERROR',
+          payload: `Username @${cleanUsername} is already taken by another person. Please choose a different username.`
+        })
+        setUsernameStatus({
+          checking: false,
+          available: false,
+          message: `@${cleanUsername} is already taken.`
+        })
+        return
+      }
+      if (state.currentUser?.uid) {
+        await claimUsername(cleanUsername, state.currentUser.uid)
+      }
+    }
 
     const fullPhone = profile.phone ? `${profile.countryCode} ${profile.phone}` : ''
 
     const payload = {
       profile: {
         ...profile,
+        username: cleanUsername,
         fullPhone
       },
       preferences,
@@ -151,21 +248,88 @@ export default function SettingsPage() {
     try {
       localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(payload))
       
-      // Also update global API key if modified
+      // Update Firebase Auth Display Name if signed in
+      if (profile.fullName.trim()) {
+        await updateUserProfileName(profile.fullName.trim())
+        if (state.currentUser) {
+          state.currentUser.displayName = profile.fullName.trim()
+        }
+      }
+
+      // Update global API key if modified
       if (apiKeyInput.trim() !== state.apiKey) {
         dispatch({ type: 'SET_API_KEY', payload: apiKeyInput.trim() })
       }
 
       dispatch({
         type: 'SET_TOAST',
-        payload: { message: 'Settings & Contact Defaults saved successfully!', type: 'success' }
+        payload: { message: 'Profile Name and Contact Defaults saved successfully!', type: 'success' }
       })
-
-      setIsSavedToast(true)
-      setTimeout(() => setIsSavedToast(false), 3000)
     } catch (err) {
       console.error('Failed to save settings:', err)
-      dispatch({ type: 'SET_ERROR', payload: 'Failed to save settings to local storage.' })
+      dispatch({ type: 'SET_ERROR', payload: 'Failed to save settings.' })
+    }
+  }
+
+  // Handle Direct Password Update
+  const handleUpdatePassword = async (e) => {
+    e.preventDefault()
+    if (!newPassword || newPassword.length < 6) {
+      dispatch({ type: 'SET_ERROR', payload: 'Password must be at least 6 characters long.' })
+      return
+    }
+    if (newPassword !== confirmPassword) {
+      dispatch({ type: 'SET_ERROR', payload: 'New password and confirmation do not match.' })
+      return
+    }
+
+    setIsUpdatingPassword(true)
+    try {
+      await updateUserAccountPassword(newPassword)
+      setNewPassword('')
+      setConfirmPassword('')
+      dispatch({
+        type: 'SET_TOAST',
+        payload: { message: 'Account password updated successfully!', type: 'success' }
+      })
+    } catch (err) {
+      console.error('Password update error:', err)
+      if (err.code === 'auth/requires-recent-login') {
+        dispatch({
+          type: 'SET_ERROR',
+          payload: 'Security check: Please log in again before changing your password, or use the email reset link below.'
+        })
+      } else {
+        dispatch({ type: 'SET_ERROR', payload: err.message || 'Failed to update password.' })
+      }
+    } finally {
+      setIsUpdatingPassword(false)
+    }
+  }
+
+  // Handle Send Password Reset / Security OTP Link
+  const handleSendResetEmail = async () => {
+    const targetEmail = profile.email || state.currentUser?.email
+    if (!targetEmail) {
+      dispatch({ type: 'SET_ERROR', payload: 'Please enter a valid email address first.' })
+      return
+    }
+
+    setIsSendingResetEmail(true)
+    try {
+      await sendPasswordReset(targetEmail)
+      dispatch({
+        type: 'SET_TOAST',
+        payload: {
+          message: `Security password reset link sent to ${targetEmail}. Check your inbox!`,
+          type: 'success'
+        }
+      })
+    } catch (err) {
+      console.error('Reset email error:', err)
+      dispatch({ type: 'SET_ERROR', payload: err.message || 'Failed to send password reset email.' })
+    } finally {
+      setIsSendingResetEmail(false)
     }
   }
 
@@ -251,7 +415,7 @@ export default function SettingsPage() {
 
     dispatch({
       type: 'SET_TOAST',
-      payload: { message: 'Contact defaults applied to active resume canvas!', type: 'success' }
+      payload: { message: 'Profile defaults applied to active resume canvas!', type: 'success' }
     })
   }
 
@@ -283,14 +447,14 @@ export default function SettingsPage() {
           <div>
             <h1>Account &amp; Profile Settings</h1>
             <p className="text-sm text-muted">
-              Manage your global contact defaults, persistent AI keys, template preferences, and data privacy.
+              Manage your personal identity, unique username, persistent AI key, and security credentials.
             </p>
           </div>
         </div>
 
         <button
           type="button"
-          className="btn btn-primary"
+          className="btn btn-primary btn-save-top"
           onClick={handleSaveSettings}
         >
           <Save size={16} />
@@ -298,33 +462,71 @@ export default function SettingsPage() {
         </button>
       </div>
 
-      <form onSubmit={handleSaveSettings} className="settings-grid">
-        {/* Left Column: Personal Defaults & Preferences */}
+      <div className="settings-grid">
+        {/* Left Column: Personal Identity, Contact, & Socials */}
         <div className="settings-main-col">
-          {/* Card 1: Candidate Contact Defaults */}
+          {/* Card 1: Personal Profile & Identity */}
           <div className="glass-card settings-card">
             <div className="settings-card-header">
               <div className="card-icon-pill">
                 <User size={18} />
               </div>
               <div>
-                <h3>Personal Profile &amp; Contact Defaults</h3>
+                <h3>Personal Profile &amp; Identity</h3>
                 <p className="text-xs text-muted">
-                  These details automatically pre-fill your contact header on newly optimized resumes.
+                  Your profile name is displayed in the header and formatted across your resumes.
                 </p>
               </div>
             </div>
 
             <div className="settings-form-grid">
               <div className="form-group">
-                <label>Full Legal Name</label>
+                <label>Profile Name (Full Name) *</label>
                 <input
                   type="text"
-                  className="input-control"
-                  placeholder="e.g. Alex Morgan"
+                  required
+                  className="input-control font-semibold"
+                  placeholder="e.g. KATTA VINEESH REDDY"
                   value={profile.fullName}
                   onChange={(e) => setProfile({ ...profile, fullName: e.target.value })}
                 />
+              </div>
+
+              {/* Unique Username Handle */}
+              <div className="form-group">
+                <div className="label-with-action">
+                  <label>Unique Username Handle *</label>
+                  {usernameStatus.available === true && (
+                    <span className="badge-status-chip chip-success">
+                      <Check size={11} /> Available
+                    </span>
+                  )}
+                  {usernameStatus.available === false && (
+                    <span className="badge-status-chip chip-danger">
+                      <X size={11} /> Taken
+                    </span>
+                  )}
+                </div>
+                <div className="input-with-prefix">
+                  <span className="input-prefix">@</span>
+                  <input
+                    type="text"
+                    required
+                    className="input-control input-prefixed"
+                    placeholder="e.g. vineesh"
+                    value={profile.username}
+                    onChange={(e) => {
+                      const val = e.target.value.toLowerCase().replace(/[^a-z0-9_.]/g, '')
+                      setProfile({ ...profile, username: val })
+                      handleCheckUsername(val)
+                    }}
+                  />
+                </div>
+                {usernameStatus.message && (
+                  <span className={`text-xs mt-1 ${usernameStatus.available ? 'text-emerald font-semibold' : 'text-danger'}`}>
+                    {usernameStatus.message}
+                  </span>
+                )}
               </div>
 
               <div className="form-group">
@@ -339,16 +541,33 @@ export default function SettingsPage() {
               </div>
 
               <div className="form-group">
-                <label>Email Address</label>
+                <label>Primary Email Address</label>
                 <input
                   type="email"
                   className="input-control"
-                  placeholder="e.g. alex.morgan@gmail.com"
+                  placeholder="e.g. vineeshreddy4@gmail.com"
                   value={profile.email}
                   onChange={(e) => setProfile({ ...profile, email: e.target.value })}
                 />
               </div>
+            </div>
+          </div>
 
+          {/* Card 2: Contact & Location */}
+          <div className="glass-card settings-card">
+            <div className="settings-card-header">
+              <div className="card-icon-pill">
+                <Phone size={18} />
+              </div>
+              <div>
+                <h3>Contact Number &amp; Location</h3>
+                <p className="text-xs text-muted">
+                  Choose your international country phone code and standard timezone.
+                </p>
+              </div>
+            </div>
+
+            <div className="settings-form-grid">
               {/* Phone Number with Country Code Dropdown */}
               <div className="form-group">
                 <label>Phone Number (Country Code)</label>
@@ -380,7 +599,7 @@ export default function SettingsPage() {
               </div>
 
               {/* Timezone Dropdown */}
-              <div className="form-group">
+              <div className="form-group" style={{ gridColumn: '1 / -1' }}>
                 <label>Standard Timezone</label>
                 <select
                   className="select-control"
@@ -394,7 +613,22 @@ export default function SettingsPage() {
                   ))}
                 </select>
               </div>
+            </div>
+          </div>
 
+          {/* Card 3: Professional & Social Links */}
+          <div className="glass-card settings-card">
+            <div className="settings-card-header">
+              <div className="card-icon-pill">
+                <Globe size={18} />
+              </div>
+              <div>
+                <h3>Professional Links &amp; Portfolio</h3>
+                <p className="text-xs text-muted">Online profiles linked to your resume contact header.</p>
+              </div>
+            </div>
+
+            <div className="settings-form-grid">
               <div className="form-group">
                 <label>LinkedIn Profile URL</label>
                 <input
@@ -440,52 +674,100 @@ export default function SettingsPage() {
               </button>
             </div>
           </div>
+        </div>
 
-          {/* Card 2: Resume Engine Preferences */}
+        {/* Right Column: Account Security & AI Engine */}
+        <div className="settings-side-col">
+          {/* Card 4: Security & Password Management */}
           <div className="glass-card settings-card">
             <div className="settings-card-header">
               <div className="card-icon-pill">
-                <Sliders size={18} />
+                <Lock size={18} />
               </div>
               <div>
-                <h3>Resume Engine &amp; Layout Preferences</h3>
-                <p className="text-xs text-muted">Customize your default typography and export standards.</p>
+                <h3>Account Security &amp; Password</h3>
+                <p className="text-xs text-muted">Change password or send security reset link to email.</p>
               </div>
             </div>
 
-            <div className="settings-form-grid">
-              <div className="form-group">
-                <label>Default ATS Template</label>
-                <select
-                  className="select-control"
-                  value={preferences.defaultTemplate}
-                  onChange={(e) => setPreferences({ ...preferences, defaultTemplate: e.target.value })}
-                >
-                  <option value="harvard">Harvard-Jake (Standard Single Column)</option>
-                  <option value="tech">Tech Lead Minimalist (Clean Badges)</option>
-                  <option value="executive">Executive Classic (Traditional Serif)</option>
-                  <option value="modern">Modern Compact (Date-Aligned Side)</option>
-                </select>
+            <div className="security-panel-stack">
+              {/* Linked Provider Badge */}
+              <div className="provider-status-card">
+                <ShieldCheck size={16} className="text-emerald" />
+                <span className="text-xs font-semibold">
+                  Signed in as <strong>{profile.email || state.currentUser?.email || 'Guest Candidate'}</strong>
+                </span>
               </div>
 
-              <div className="form-group">
-                <label>Default Paper Format</label>
-                <select
-                  className="select-control"
-                  value={preferences.paperFormat}
-                  onChange={(e) => setPreferences({ ...preferences, paperFormat: e.target.value })}
+              {/* Send Reset / OTP Link to Email */}
+              <div className="security-action-box">
+                <div>
+                  <h4 className="text-sm font-bold">Email Password Reset Link</h4>
+                  <p className="text-xs text-muted">
+                    Receive a secure verification link to your email to reset or create an account password.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  disabled={isSendingResetEmail}
+                  className="btn btn-secondary btn-sm"
+                  onClick={handleSendResetEmail}
                 >
-                  <option value="letter">US Letter (8.5 × 11 inches — US &amp; Canada standard)</option>
-                  <option value="a4">International A4 (210 × 297 mm — Global standard)</option>
-                </select>
+                  <Mail size={14} />
+                  <span>{isSendingResetEmail ? 'Sending...' : 'Send Reset Link'}</span>
+                </button>
               </div>
+
+              <div className="governance-divider" />
+
+              {/* Direct Password Change Form */}
+              <form onSubmit={handleUpdatePassword} className="password-change-form">
+                <h4 className="text-sm font-bold">Update Account Password</h4>
+                
+                <div className="form-group">
+                  <label>New Password</label>
+                  <div className="input-password-wrapper">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      className="input-control"
+                      placeholder="Min 6 characters"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                    />
+                    <button
+                      type="button"
+                      className="btn-toggle-eye"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label>Confirm New Password</label>
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    className="input-control"
+                    placeholder="Re-enter new password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isUpdatingPassword || !newPassword}
+                  className="btn btn-primary btn-sm btn-update-pwd"
+                >
+                  <Lock size={14} />
+                  <span>{isUpdatingPassword ? 'Updating Password...' : 'Update Password'}</span>
+                </button>
+              </form>
             </div>
           </div>
-        </div>
 
-        {/* Right Column: AI Key & Data Governance */}
-        <div className="settings-side-col">
-          {/* Card 3: AI Engine & Gemini Key */}
+          {/* Card 5: AI Engine & Gemini Key */}
           <div className="glass-card settings-card">
             <div className="settings-card-header">
               <div className="card-icon-pill">
@@ -500,8 +782,8 @@ export default function SettingsPage() {
             <div className="api-key-panel">
               <div className="api-status-strip">
                 <span className={`status-indicator-dot ${state.apiKey ? 'dot-active' : 'dot-missing'}`} />
-                <span className="text-xs text-bold">
-                  {state.apiKey ? 'AI Engine Ready (BYOK Active)' : 'API Key Missing — Free tier rate limits may apply'}
+                <span className="text-xs font-bold">
+                  {state.apiKey ? 'AI Engine Ready (BYOK Active)' : 'API Key Missing — Free tier rate limits apply'}
                 </span>
               </div>
 
@@ -534,25 +816,53 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          {/* Card 4: Data Governance & Privacy */}
+          {/* Card 6: Resume Preferences & Data Governance */}
           <div className="glass-card settings-card">
             <div className="settings-card-header">
               <div className="card-icon-pill">
-                <Shield size={18} />
+                <Sliders size={18} />
               </div>
               <div>
-                <h3>Data Governance &amp; Privacy</h3>
-                <p className="text-xs text-muted">100% Client-Side Privacy Compliance.</p>
+                <h3>Resume Engine Preferences</h3>
+                <p className="text-xs text-muted">Default typography &amp; formatting.</p>
               </div>
             </div>
+
+            <div className="settings-form-grid" style={{ gridTemplateColumns: '1fr' }}>
+              <div className="form-group">
+                <label>Default ATS Template</label>
+                <select
+                  className="select-control"
+                  value={preferences.defaultTemplate}
+                  onChange={(e) => setPreferences({ ...preferences, defaultTemplate: e.target.value })}
+                >
+                  <option value="harvard">Harvard-Jake (Standard Single Column)</option>
+                  <option value="tech">Tech Lead Minimalist (Clean Badges)</option>
+                  <option value="executive">Executive Classic (Traditional Serif)</option>
+                  <option value="modern">Modern Compact (Date-Aligned Side)</option>
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label>Default Paper Format</label>
+                <select
+                  className="select-control"
+                  value={preferences.paperFormat}
+                  onChange={(e) => setPreferences({ ...preferences, paperFormat: e.target.value })}
+                >
+                  <option value="letter">US Letter (8.5 × 11 in — US/Canada standard)</option>
+                  <option value="a4">International A4 (210 × 297 mm — Global standard)</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="governance-divider" />
 
             <div className="data-governance-stack">
               <div className="governance-item">
                 <div>
                   <h4 className="text-sm font-bold">Export All My Data</h4>
-                  <p className="text-xs text-muted">
-                    Download a full JSON archive containing your profile and saved resumes.
-                  </p>
+                  <p className="text-xs text-muted">Download JSON backup archive.</p>
                 </div>
                 <button
                   type="button"
@@ -564,14 +874,10 @@ export default function SettingsPage() {
                 </button>
               </div>
 
-              <div className="governance-divider" />
-
               <div className="governance-item">
                 <div>
-                  <h4 className="text-sm font-bold text-danger">Wipe Local Storage &amp; Cache</h4>
-                  <p className="text-xs text-muted">
-                    Permanently delete all locally cached resumes and preferences on this browser.
-                  </p>
+                  <h4 className="text-sm font-bold text-danger">Wipe Local Storage</h4>
+                  <p className="text-xs text-muted">Delete browser cached resumes.</p>
                 </div>
                 <button
                   type="button"
@@ -585,7 +891,7 @@ export default function SettingsPage() {
             </div>
           </div>
         </div>
-      </form>
+      </div>
 
       {/* Confirmation Modal for Data Wipe */}
       {showDeleteModal && (
