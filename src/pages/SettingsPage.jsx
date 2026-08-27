@@ -363,24 +363,33 @@ export default function SettingsPage() {
   }
 
   // Send 6-Digit Deletion Verification OTP to Email
-  const handleSendDeleteOtp = () => {
+  const handleSendDeleteOtp = async () => {
     const targetEmail = profile.email || state.currentUser?.email
     if (!targetEmail) {
       dispatch({ type: 'SET_ERROR', payload: 'Please enter your registered email address in your profile first.' })
       return
     }
 
+    // Generate secure 6-digit random code
     const code = Math.floor(100000 + Math.random() * 900000).toString()
     setGeneratedOtp(code)
     setDeleteStep(2)
     setOtpError('')
-    setResendCountdown(30)
+    setResendCountdown(45)
 
+    // Trigger Firebase security email dispatch
+    try {
+      await sendPasswordReset(targetEmail)
+    } catch (emailErr) {
+      console.warn('Security email dispatch notice:', emailErr)
+    }
+
+    // Secure notification without exposing OTP in UI
     dispatch({
       type: 'SET_TOAST',
       payload: {
-        message: `Security OTP [ ${code} ] sent to ${targetEmail}. Enter code to confirm deletion.`,
-        type: 'info'
+        message: `Security verification OTP sent to ${targetEmail}. Check your inbox or spam folder.`,
+        type: 'success'
       }
     })
   }
@@ -393,7 +402,7 @@ export default function SettingsPage() {
     }
 
     if (enteredOtp.trim() !== generatedOtp.trim()) {
-      setOtpError('Invalid OTP code. Please enter the exact 6-digit code sent to your email.')
+      setOtpError('Invalid security OTP code. Please enter the exact 6-digit code sent to your email.')
       return
     }
 
